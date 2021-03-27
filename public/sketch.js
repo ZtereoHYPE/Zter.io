@@ -6,12 +6,11 @@ var socket;
 let frames = 0;
 let cameraX = 0;
 let cameraY = 0;
-let cameraZoom = 1.7;
+let cameraZoom = 3;
 let debugInfo = 0;
 let renderedFood = 0;
 
 // make camera work using this https://editor.p5js.org/carl-vbn/sketches/L5AFIST1U
-
 
 function setup() {
   frameRate(60)
@@ -27,7 +26,6 @@ function setup() {
     console.log('Recieved game map')
     createCanvas(windowWidth, windowHeight);
 
-    console.log(map.playerContainer)
     for (playerObject in map.playerContainer) {
       if (playerObject != id) {
         clientPlayerArray.push(new Player(map['playerContainer'][playerObject], playerObject))
@@ -35,31 +33,24 @@ function setup() {
         mainPlayer = new Player(map['playerContainer'][playerObject], playerObject)
       }
     }
-    console.log(clientPlayerArray)
+    delete map['playerContainer'];
   })
 
   socket.on('newPlayer', (playerId) => {
     console.log('New player connected')
-    map['playerContainer'][playerId] = {
-      x: map.size.x/2,
-      y: map.size.x/2,
-      size: 20
-    }
-    clientPlayerArray.push(new Player(map['playerContainer'][playerId], playerId))
-
+    clientPlayerArray.push(new Player(
+      {
+        x: map.size.x / 2,
+        y: map.size.x / 2,
+        size: 20
+      },
+      playerId))
   })
 
   socket.on('playerPosition', (positionData) => {
-    // player position in positionData is given in x and y coordinates
-    // player position in map.playerContainer same
-    // player position in clientPlayerArray is given in vector (location.x and location.y) because they are objects created from classes
-    
-    map['playerContainer'][positionData.id]['x'] = positionData.x
-    map['playerContainer'][positionData.id]['y'] = positionData.y
-    map['playerContainer'][positionData.id]['size'] = positionData.size
+    // player position in clientPlayerArray is given in location.x and location.y because they are objects created from classes
+    var currentlyUpdatingPlayerIndex = clientPlayerArray.map(function (player) { return player.id; }).indexOf(positionData.id);
 
-    var currentlyUpdatingPlayerIndex = clientPlayerArray.map(function(player) { return player.id; }).indexOf(positionData.id);
-    
     clientPlayerArray[currentlyUpdatingPlayerIndex]['location']['x'] = positionData.x
     clientPlayerArray[currentlyUpdatingPlayerIndex]['location']['y'] = positionData.y
     clientPlayerArray[currentlyUpdatingPlayerIndex]['size'] = positionData.size
@@ -74,7 +65,6 @@ function setup() {
   })
 
   socket.on('playerDisconnected', (disconnectedPlayerId) => {
-    delete map['playerContainer'][disconnectedPlayerId];
     clientPlayerArray.splice(clientPlayerArray.indexOf(clientPlayerArray.filter(player => player.id == disconnectedPlayerId)), 1);
   })
 }
@@ -90,25 +80,17 @@ function draw() {
   cameraY = mainPlayer.location.y
 
   fill('white')
-  rect((0-cameraX)*cameraZoom + windowWidth/2, (0-cameraY)*cameraZoom + windowHeight/2, map.size.x*cameraZoom, map.size.y*cameraZoom)
-
-  // failed attempt at doing borders lol
-
-  // fill('black')
-  // rect(map.size.x/2, map.size.y, map.size.x, 20)
-  // rect(map.size.x/2, 0, map.size.x, 20)
-  // rect(map.size.x, map.size.y/2, 20, map.size.y)
-  // rect(0, map.size.y/2, 20, map.size.y)
+  rect((0 - cameraX) * cameraZoom + windowWidth / 2, (0 - cameraY) * cameraZoom + windowHeight / 2, map.size.x * cameraZoom, map.size.y * cameraZoom)
 
   renderedFood = 0;
   map.foodArray.forEach((food) => {
     // cull food out of the screen to keep from lag on large maps
-    if (food.x > cameraX + (windowWidth/2 + 10)/cameraZoom || food.x < cameraX - (windowWidth/2 + 10)/cameraZoom || food.y > cameraY + (windowHeight/2 + 10)/cameraZoom || food.y < cameraY - (windowHeight/2 + 10)/cameraZoom) {
+    if (food.x > cameraX + (windowWidth / 2 + 10) / cameraZoom || food.x < cameraX - (windowWidth / 2 + 10) / cameraZoom || food.y > cameraY + (windowHeight / 2 + 10) / cameraZoom || food.y < cameraY - (windowHeight / 2 + 10) / cameraZoom) {
       return;
     }
     fill(food.colour)
     noStroke()
-    circle((food.x-cameraX)*cameraZoom + windowWidth/2, (food.y-cameraY)*cameraZoom + windowHeight/2, 10*cameraZoom);
+    circle((food.x - cameraX) * cameraZoom + windowWidth / 2, (food.y - cameraY) * cameraZoom + windowHeight / 2, 10 * cameraZoom);
     renderedFood++;
   })
 
@@ -120,20 +102,15 @@ function draw() {
   mainPlayer.display("blue", cameraX, cameraY, cameraZoom)
   mainPlayer.move()
   mainPlayer.checkEat(map.foodArray)
-  // mainPlayer.checkEatPlayer(clientPlayerArray)
-  
 
-
-  if (cameraZoom > 20/mainPlayer.size + 0.7) {
-    let zoomDifference = (cameraZoom - (20/mainPlayer.size + 0.7))/20
+  if (cameraZoom > 20 / mainPlayer.size + 0.7) {
+    let zoomDifference = (cameraZoom - (20 / mainPlayer.size + 0.7)) / 20
     if (zoomDifference < 0.0001) {
-      cameraZoom = 20/mainPlayer.size + 0.7;
+      cameraZoom = 20 / mainPlayer.size + 0.7;
     } else {
       cameraZoom -= zoomDifference;
     }
   }
-
-  // cameraZoom = 20/mainPlayer.size + 0.7;
 
   // broadcasting loop
   if (frames % 3 == 0) {
@@ -145,15 +122,16 @@ function draw() {
     fill(0, 102, 153, 255);
     text('Debug Data', 10, 20);
     fill(0, 102, 153, 200);
-    text('Zoom: ' + cameraZoom + '/' + (cameraZoom -(20/mainPlayer.size + 0.7)), 10, 40);
+    text('Zoom: ' + cameraZoom + '/' + (cameraZoom - (20 / mainPlayer.size + 0.7)), 10, 40);
     text('Camera X, Y: ' + Math.floor(cameraX) + ' , ' + Math.floor(cameraY), 10, 60);
     text('Frame: ' + frames, 10, 80);
     text('Other Players Count: ' + clientPlayerArray.length, 10, 100);
     text('Total Food/Rendered Food: ' + map.foodArray.length + '/' + renderedFood, 10, 120);
     text('Frames: ' + Math.floor(frameRate()), 10, 140);
+    text('Size: ' + mainPlayer.size, 10, 160);
   }
 
-  frames++
+  frames++;
 }
 
 function keyPressed() {
@@ -168,4 +146,22 @@ function keyPressed() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+}
+
+function normalizeCoordinates(object) {
+  let magnitude = Math.sqrt(object.x * object.x + object.y * object.y)
+  return {
+    x: object.x / magnitude,
+    y: object.y / magnitude
+  };
+}
+
+function calculateDistance(object1, object2) {
+  let differenceX = object1.x - object2.x;
+  if (differenceX < 0) differenceX = -differenceX;
+
+  let differenceY = object1.y - object2.y;
+  if (differenceY < 0) differenceY = -differenceY;
+
+  return Math.sqrt(differenceX * differenceX + differenceY * differenceY);
 }

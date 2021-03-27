@@ -6,7 +6,7 @@ var socket;
 let frames = 0;
 let cameraX = 0;
 let cameraY = 0;
-let cameraZoom = 1;
+let cameraZoom = 1.7;
 let debugInfo = 0;
 let renderedFood = 0;
 
@@ -86,6 +86,12 @@ function draw() {
 
   background(220);
 
+  cameraX = mainPlayer.location.x
+  cameraY = mainPlayer.location.y
+
+  fill('white')
+  rect((0-cameraX)*cameraZoom + windowWidth/2, (0-cameraY)*cameraZoom + windowHeight/2, map.size.x*cameraZoom, map.size.y*cameraZoom)
+
   // failed attempt at doing borders lol
 
   // fill('black')
@@ -108,17 +114,26 @@ function draw() {
 
   // TODO: render players in order of opposite size so larger players appear on top :P
   clientPlayerArray.forEach((player) => {
-    player.display("red", cameraX, cameraY)
+    player.display("red", cameraX, cameraY, cameraZoom)
   })
 
   mainPlayer.display("blue", cameraX, cameraY, cameraZoom)
   mainPlayer.move()
   mainPlayer.checkEat(map.foodArray)
+  // mainPlayer.checkEatPlayer(clientPlayerArray)
   
-  cameraX = mainPlayer.location.x
-  cameraY = mainPlayer.location.y
 
-  cameraZoom = 20/mainPlayer.size + 0.7
+
+  if (cameraZoom > 20/mainPlayer.size + 0.7) {
+    let zoomDifference = (cameraZoom - (20/mainPlayer.size + 0.7))/20
+    if (zoomDifference < 0.0001) {
+      cameraZoom = 20/mainPlayer.size + 0.7;
+    } else {
+      cameraZoom -= zoomDifference;
+    }
+  }
+
+  // cameraZoom = 20/mainPlayer.size + 0.7;
 
   // broadcasting loop
   if (frames % 3 == 0) {
@@ -130,11 +145,12 @@ function draw() {
     fill(0, 102, 153, 255);
     text('Debug Data', 10, 20);
     fill(0, 102, 153, 200);
-    text('Zoom: ' + cameraZoom, 10, 40);
-    text('Camera X, Y: ' + cameraX + ' , ' + cameraY, 10, 60);
+    text('Zoom: ' + cameraZoom + '/' + (cameraZoom -(20/mainPlayer.size + 0.7)), 10, 40);
+    text('Camera X, Y: ' + Math.floor(cameraX) + ' , ' + Math.floor(cameraY), 10, 60);
     text('Frame: ' + frames, 10, 80);
     text('Other Players Count: ' + clientPlayerArray.length, 10, 100);
     text('Total Food/Rendered Food: ' + map.foodArray.length + '/' + renderedFood, 10, 120);
+    text('Frames: ' + Math.floor(frameRate()), 10, 140);
   }
 
   frames++

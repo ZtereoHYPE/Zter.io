@@ -17,13 +17,13 @@ let map = {
     foodArray: [],
     playerContainer: {},
     size: {
-        x: 300,
-        y: 300
+        x: 3000,
+        y: 3000
     }
 }
 
 // Push food to the foodArray
-for (i = 0; i < map.size.x / 10 + 20; i++) {
+for (i = 0; i < map.size.x / 5 + 10; i++) {
     map.foodArray.push({
         x: Math.floor(Math.random() * map.size.x),
         y: Math.floor(Math.random() * map.size.y),
@@ -39,7 +39,7 @@ function connectionEvent(socket) {
     // Add a player object in the playerContainer
     map["playerContainer"][socket.id] = {
         x: map.size.x / 2,
-        y: map.size.x / 2,
+        y: map.size.y / 2,
         size: 20
     }
 
@@ -78,7 +78,7 @@ function connectionEvent(socket) {
     function broacastFoodEaten(eatenFoodIndex) {
         socket.broadcast.emit('foodEaten', eatenFoodIndex);
         map.foodArray.splice(eatenFoodIndex, 1);
-        while (map.foodArray.length < map.size.x / 10) {
+        while (map.foodArray.length < map.size.x / 5) {
             let food = {
                 x: Math.floor(Math.random() * map.size.x),
                 y: Math.floor(Math.random() * map.size.y),
@@ -96,7 +96,7 @@ function connectionEvent(socket) {
 
 // Delete from the map the player and broadcast the deletion
 function disconnectPlayer() {
-    console.log('New disconnection: ' + this.id);
+    console.log('Player disconnected: ' + this.id);
     delete map['playerContainer'][this.id]
     io.sockets.emit('playerDisconnected', this.id)
 }

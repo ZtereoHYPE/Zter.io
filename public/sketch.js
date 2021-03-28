@@ -9,6 +9,7 @@ let cameraY = 0;
 let cameraZoom = 3;
 let debugInfo = 0;
 let renderedFood = 0;
+let dead = false;
 
 // make camera work using this https://editor.p5js.org/carl-vbn/sketches/L5AFIST1U
 
@@ -67,6 +68,17 @@ function setup() {
   socket.on('playerDisconnected', (disconnectedPlayerId) => {
     clientPlayerArray.splice(clientPlayerArray.indexOf(clientPlayerArray.filter(player => player.id == disconnectedPlayerId)), 1);
   })
+
+  socket.on('eatenPlayer', data => {
+    console.log(data.eatenPlayerId + ' has been eaten')
+
+    if (data.eatenPlayerId == id) {
+      mainPlayer = false;
+      dead = true;
+    } else {
+      clientPlayerArray.splice(clientPlayerArray.indexOf(clientPlayerArray.filter(player => player.id == data.eatenPlayerId)), 1);
+    }
+  })
 }
 
 function draw() {
@@ -74,10 +86,9 @@ function draw() {
     return;
   }
 
+
   background(220);
 
-  cameraX = mainPlayer.location.x
-  cameraY = mainPlayer.location.y
 
   fill('white')
   rect((0 - cameraX) * cameraZoom + windowWidth / 2, (0 - cameraY) * cameraZoom + windowHeight / 2, map.size.x * cameraZoom, map.size.y * cameraZoom)
@@ -99,9 +110,13 @@ function draw() {
     player.display("red", cameraX, cameraY, cameraZoom)
   })
 
-  mainPlayer.display("blue", cameraX, cameraY, cameraZoom)
-  mainPlayer.move()
-  mainPlayer.checkEat(map.foodArray)
+  if (mainPlayer) {
+    mainPlayer.display("blue", cameraX, cameraY, cameraZoom)
+    mainPlayer.move()
+    mainPlayer.checkEat(map.foodArray)
+    cameraX = mainPlayer.location.x
+    cameraY = mainPlayer.location.y
+  }
 
   if (cameraZoom > 20 / mainPlayer.size + 0.7) {
     let zoomDifference = (cameraZoom - (20 / mainPlayer.size + 0.7)) / 20
@@ -113,7 +128,7 @@ function draw() {
   }
 
   // broadcasting loop
-  if (frames % 3 == 0) {
+  if (frames % 3 == 0 && mainPlayer) {
     mainPlayer.emitPosition()
   }
 
@@ -129,6 +144,11 @@ function draw() {
     text('Total Food/Rendered Food: ' + map.foodArray.length + '/' + renderedFood, 10, 120);
     text('Frames: ' + Math.floor(frameRate()), 10, 140);
     text('Size: ' + mainPlayer.size, 10, 160);
+  }
+  if (dead) {
+    fill('black')
+    textSize(50)
+    text('You got eaten!', windowWidth / 2 - 160, windowHeight / 2);
   }
 
   frames++;

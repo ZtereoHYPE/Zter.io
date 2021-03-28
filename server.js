@@ -5,9 +5,9 @@ const app = express();
 const server = app.listen(3000);
 const io = socket(server);
 
-app.use(express.static('public'))
+app.use(express.static('public'));
 
-console.log('Le server is running...')
+console.log('Le server is running...');
 
 // When a socket connects, run connectionEvent
 io.sockets.on('connect', connectionEvent);
@@ -17,10 +17,10 @@ let map = {
     foodArray: [],
     playerContainer: {},
     size: {
-        x: 3000,
-        y: 3000
+        x: 2000,
+        y: 2000
     }
-}
+};
 
 // Push food to the foodArray
 for (i = 0; i < map.size.x / 5 + 10; i++) {
@@ -29,7 +29,7 @@ for (i = 0; i < map.size.x / 5 + 10; i++) {
         y: Math.floor(Math.random() * map.size.y),
         colour: '#' + ('00000' + (Math.random() * (1 << 24) | 0).toString(16)).slice(-6)
     })
-}
+};
 
 // When a new client connects
 function connectionEvent(socket) {
@@ -41,26 +41,26 @@ function connectionEvent(socket) {
         x: map.size.x / 2,
         y: map.size.y / 2,
         size: 20
-    }
+    };
 
     // Send to the player their own id so they know what player of the container they are
-    socket.emit('playerId', socket.id)
+    socket.emit('playerId', socket.id);
 
     // Send the player the entire map
-    socket.emit('mapData', map)
+    socket.emit('mapData', map);
 
     // Broadcast to other players the new player object
-    socket.broadcast.emit('newPlayer', socket.id)
+    socket.broadcast.emit('newPlayer', socket.id);
 
     // Add an event listener for position, which executes updatePlayer
     socket.on('position', updatePlayer);
 
     // TODO change the system to be server side maybe? idk
-    socket.on('foodEaten', broacastFoodEaten)
+    socket.on('foodEaten', broacastFoodEaten);
 
-    socket.on('disconnect', disconnectPlayer)
+    socket.on('disconnect', disconnectPlayer);
 
-    socket.on('sizeDifference', updateSizes)
+    socket.on('sizeDifference', updateSizes);
 
     // Update the player position in the server-side map and broadcast it to others
     function updatePlayer(positionData) {
@@ -72,7 +72,8 @@ function connectionEvent(socket) {
         map["playerContainer"][id]["y"] = positionData.y;
 
         socket.broadcast.emit('playerPosition', positionData);
-    }
+        checkPlayerEat()
+    };
 
     // Broadcast the eaten food index. While there are less than 70 foods, push to the food array the new food and broadcast it
     function broacastFoodEaten(eatenFoodIndex) {
@@ -87,16 +88,60 @@ function connectionEvent(socket) {
             map.foodArray.push(food);
             io.sockets.emit('foodGenerated', food)
         }
-    }
+    };
 
     function updateSizes(size) {
         map['playerContainer'][this.id]['size'] = size;
+    };
+
+    function checkPlayerEat() {
+        let largerPlayer;
+        let smallerPlayer;
+
+        for (let player in map.playerContainer) {
+            
+            for (let secondPlayer in map.playerContainer) {
+
+                if (map.playerContainer[player].size > map.playerContainer[secondPlayer].size) {
+                    largerPlayer = player;
+                    smallerPlayer = secondPlayer;
+
+                } else if (map.playerContainer[player].size < map.playerContainer[secondPlayer].size) {
+                    smallerPlayer = player;
+                    largerPlayer = secondPlayer;
+                }
+                
+                if (smallerPlayer && largerPlayer) {
+                    if (calculateDistance(map.playerContainer[smallerPlayer], map.playerContainer[largerPlayer]) < map.playerContainer[largerPlayer].size/2) {
+                        let data = {
+                            eatenPlayerId: smallerPlayer,
+                            eatingPlayerId: largerPlayer,
+                            eatenPlayerSize: map.playerContainer[smallerPlayer].size
+                        };
+
+                        delete map.playerContainer[smallerPlayer];
+                        io.sockets.emit('eatenPlayer', data);
+                        return;
+                    }
+                }
+            }
+        }
     }
-}
+};
 
 // Delete from the map the player and broadcast the deletion
 function disconnectPlayer() {
     console.log('Player disconnected: ' + this.id);
     delete map['playerContainer'][this.id]
     io.sockets.emit('playerDisconnected', this.id)
-}
+};
+
+function calculateDistance(object1, object2) {
+    let differenceX = object1.x - object2.x;
+    if (differenceX < 0) differenceX = -differenceX;
+  
+    let differenceY = object1.y - object2.y;
+    if (differenceY < 0) differenceY = -differenceY;
+  
+    return Math.sqrt(differenceX * differenceX + differenceY * differenceY);
+  }

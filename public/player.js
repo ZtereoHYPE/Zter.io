@@ -71,7 +71,7 @@ class Player {
 
   checkEat(foodArray) {
     foodArray.forEach((food) => {
-      if (calculateDistance(this.location, food) < this.size / 2) {
+      if (calculateDistance(this.location, food) < this.size / 2 - 5) {
         var data = foodArray.indexOf(food)
     
         socket.emit('foodEaten', data)

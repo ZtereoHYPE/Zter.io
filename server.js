@@ -71,8 +71,9 @@ function connectionEvent(socket) {
         map["playerContainer"][id]["x"] = positionData.x;
         map["playerContainer"][id]["y"] = positionData.y;
 
+        checkPlayerEat();
+
         socket.broadcast.emit('playerPosition', positionData);
-        checkPlayerEat()
     };
 
     // Broadcast the eaten food index. While there are less than 70 foods, push to the food array the new food and broadcast it
@@ -91,38 +92,39 @@ function connectionEvent(socket) {
     };
 
     function updateSizes(size) {
+        if (!map['playerContainer'][this.id]) return;
         map['playerContainer'][this.id]['size'] = size;
     };
 
     function checkPlayerEat() {
-        let largerPlayer;
-        let smallerPlayer;
-
+        // Loop in loop to check each player and their distance
         for (let player in map.playerContainer) {
-            
             for (let secondPlayer in map.playerContainer) {
+                if (player == secondPlayer) continue;
+                // Declare empty smaller and larger players
+                let largerPlayer;
+                let smallerPlayer;
 
+                // Make largerPlayer the larger player and smallerPlayer the smaller one
                 if (map.playerContainer[player].size > map.playerContainer[secondPlayer].size) {
                     largerPlayer = player;
                     smallerPlayer = secondPlayer;
 
-                } else if (map.playerContainer[player].size < map.playerContainer[secondPlayer].size) {
+                } else {
                     smallerPlayer = player;
                     largerPlayer = secondPlayer;
                 }
-                
-                if (smallerPlayer && largerPlayer) {
-                    if (calculateDistance(map.playerContainer[smallerPlayer], map.playerContainer[largerPlayer]) < map.playerContainer[largerPlayer].size/2) {
-                        let data = {
-                            eatenPlayerId: smallerPlayer,
-                            eatingPlayerId: largerPlayer,
-                            eatenPlayerSize: map.playerContainer[smallerPlayer].size
-                        };
 
-                        delete map.playerContainer[smallerPlayer];
-                        io.sockets.emit('eatenPlayer', data);
-                        return;
-                    }
+                // Calculate the distance between the players and if it's smaller than half the size of the larger player then delete it and broadcast it
+                if (calculateDistance(map.playerContainer[player], map.playerContainer[secondPlayer]) < map.playerContainer[largerPlayer].size / 2) {
+                    let data = {
+                        eatenPlayerId: smallerPlayer,
+                        eatingPlayerId: largerPlayer,
+                        eatenPlayerSize: map.playerContainer[smallerPlayer].size
+                    };
+
+                    delete map.playerContainer[smallerPlayer];
+                    io.sockets.emit('eatenPlayer', data);
                 }
             }
         }
@@ -138,10 +140,7 @@ function disconnectPlayer() {
 
 function calculateDistance(object1, object2) {
     let differenceX = object1.x - object2.x;
-    if (differenceX < 0) differenceX = -differenceX;
-  
     let differenceY = object1.y - object2.y;
-    if (differenceY < 0) differenceY = -differenceY;
-  
+
     return Math.sqrt(differenceX * differenceX + differenceY * differenceY);
-  }
+}

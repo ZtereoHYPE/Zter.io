@@ -10,14 +10,16 @@ let cameraZoom = 3;
 let debugInfo = 0;
 let renderedFood = 0;
 let dead = false;
+let disconnected = false;
 
 // make camera work using this https://editor.p5js.org/carl-vbn/sketches/L5AFIST1U
 
 function setup() {
   frameRate(60)
-  socket = io.connect('http://109.130.192.116:3000')
+  socket = io.connect('http://localhost:3000')
 
   socket.on('playerId', (recievedId) => {
+    disconnected = false;
     id = recievedId
     console.log('Recieved ID: ' + id)
   })
@@ -79,6 +81,8 @@ function setup() {
       clientPlayerArray.splice(clientPlayerArray.indexOf(clientPlayerArray.filter(player => player.id == data.eatenPlayerId)), 1);
     }
   })
+
+  socket.on('disconnect', () => disconnected = true)
 }
 
 function draw() {
@@ -86,9 +90,7 @@ function draw() {
     return;
   }
 
-
   background(220);
-
 
   fill('white')
   rect((0 - cameraX) * cameraZoom + windowWidth / 2, (0 - cameraY) * cameraZoom + windowHeight / 2, map.size.x * cameraZoom, map.size.y * cameraZoom)
@@ -105,7 +107,10 @@ function draw() {
     renderedFood++;
   })
 
-  // TODO: render players in order of opposite size so larger players appear on top :P
+  // TODO: this is an attempt at sorting... does it work?
+  clientPlayerArray.sort(function(a, b){return b.size - a.size})
+
+  // TODO: find a way to render the mainplayer in this loop... maybe add it in the clientplayerarray and do some magic to recognise it.
   clientPlayerArray.forEach((player) => {
     player.display("red", cameraX, cameraY, cameraZoom)
   })
@@ -150,6 +155,11 @@ function draw() {
     textSize(50)
     text('You got eaten!', windowWidth / 2 - 160, windowHeight / 2);
   }
+  if (disconnected) {
+    fill('black')
+    textSize(50)
+    text('You are disconnected from the server', windowWidth / 2 - 160, windowHeight / 2);
+  }
 
   frames++;
 }
@@ -178,10 +188,7 @@ function normalizeCoordinates(object) {
 
 function calculateDistance(object1, object2) {
   let differenceX = object1.x - object2.x;
-  if (differenceX < 0) differenceX = -differenceX;
-
   let differenceY = object1.y - object2.y;
-  if (differenceY < 0) differenceY = -differenceY;
 
   return Math.sqrt(differenceX * differenceX + differenceY * differenceY);
 }

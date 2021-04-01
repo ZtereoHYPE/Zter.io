@@ -13,3 +13,7 @@ This is an attempt to ~~copy~~ remake the game Agar.io in node.js and P5.js.
 
 ## Not TODOs
 - Splitting and merging. Don't even think of that nightmare. (I do accept contributions though)
+
+## Know bugs
+- Players die for no reason
+- Players become invisible

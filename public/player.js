@@ -25,13 +25,17 @@ class Player {
     fill(colour);
     noStroke();
     circle((this.location.x-cameraX)*cameraZoom + windowWidth/2, (this.location.y-cameraY)*cameraZoom + windowHeight/2, this.renderedSize*cameraZoom);
-    
+    fill('black');
+    text(this.id, (this.location.x-cameraX)*cameraZoom + windowWidth/2, (this.location.y-cameraY)*cameraZoom + windowHeight/2);
   }
 
   move() {
-    this.velocity.x = mouseX - windowWidth/2;
-    this.velocity.y = mouseY - windowHeight/2;
-    this.velocity = normalizeCoordinates(this.velocity)
+    this.velocity.x = (mouseX - windowWidth/2)/this.size
+    this.velocity.y = (mouseY - windowHeight/2)/this.size
+    if (Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y) > 1) {
+      this.velocity = normalizeCoordinates(this.velocity)
+    }
+    
 
     if (this.size > 100) {
       this.velocity.x = this.velocity.x / (100 / 4) * 28
@@ -71,7 +75,7 @@ class Player {
 
   checkEat(foodArray) {
     foodArray.forEach((food) => {
-      if (calculateDistance(this.location, food) < this.size / 2 - 5) {
+      if (calculateDistance(this.location, food) < this.size / 2 - 2) {
         var data = foodArray.indexOf(food)
     
         socket.emit('foodEaten', data)
@@ -82,5 +86,23 @@ class Player {
         socket.emit('sizeDifference', this.size)
       }
     });
+  }
+
+  emitRotation() {
+    this.velocity.x = (mouseX - windowWidth/2)/this.size
+    this.velocity.y = (mouseY - windowHeight/2)/this.size
+    if (Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y) > 1) {
+      this.velocity = normalizeCoordinates(this.velocity)
+    }
+    
+    if (this.size > 100) {
+      this.velocity.x = this.velocity.x / (100 / 4) * 28
+      this.velocity.y = this.velocity.y / (100 / 4) * 28
+    } else {
+      this.velocity.x = this.velocity.x / (this.size / 4) * 28
+      this.velocity.y = this.velocity.y / (this.size / 4) * 28
+    }
+
+    socket.emit('rotation', this.velocity)
   }
 }

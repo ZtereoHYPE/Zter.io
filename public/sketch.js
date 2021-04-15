@@ -15,180 +15,216 @@ let disconnected = false;
 // make camera work using this https://editor.p5js.org/carl-vbn/sketches/L5AFIST1U
 
 function setup() {
-  frameRate(60)
-  socket = io.connect('http://localhost:3000')
+	frameRate(60)
+	socket = io.connect('http://localhost:3000')
 
-  socket.on('playerId', (recievedId) => {
-    disconnected = false;
-    id = recievedId
-    console.log('Recieved ID: ' + id)
-  })
+	socket.on('playerId', (recievedId) => {
+		disconnected = false;
+		id = recievedId
+		console.log('Recieved ID: ' + id)
+	})
 
-  socket.on('mapData', (recievedMap) => {
-    map = recievedMap;
-    console.log('Recieved game map')
-    createCanvas(windowWidth, windowHeight);
+	socket.on('mapData', (recievedMap) => {
+		map = recievedMap;
+		console.log('Recieved game map')
+		createCanvas(windowWidth, windowHeight);
 
-    for (playerObject in map.playerContainer) {
-      if (playerObject != id) {
-        clientPlayerArray.push(new Player(map['playerContainer'][playerObject], playerObject))
-      } else {
-        mainPlayer = new Player(map['playerContainer'][playerObject], playerObject)
-      }
-    }
-    delete map['playerContainer'];
-  })
+		for (playerObject in map.playerContainer) {
+			if (playerObject != id) {
+				clientPlayerArray.push(new Player(map['playerContainer'][playerObject], playerObject))
+			} else {
+				mainPlayer = new Player(map['playerContainer'][playerObject], playerObject)
+			}
+		}
+		delete map['playerContainer'];
+		// console.log(map.foodArray)
+	})
 
-  socket.on('newPlayer', (playerId) => {
-    console.log('New player connected')
-    clientPlayerArray.push(new Player(
-      {
-        x: map.size.x / 2,
-        y: map.size.x / 2,
-        size: 20
-      },
-      playerId))
-  })
+	socket.on('newPlayer', (playerId) => {
+		console.log('New player connected')
+		clientPlayerArray.push(new Player(
+			{
+				x: map.size.x / 2,
+				y: map.size.x / 2,
+				size: 20
+			},
+			playerId))
+	})
 
-  socket.on('playerPosition', (positionData) => {
-    // player position in clientPlayerArray is given in location.x and location.y because they are objects created from classes
-    var currentlyUpdatingPlayerIndex = clientPlayerArray.map(function (player) { return player.id; }).indexOf(positionData.id);
+	socket.on('playerPosition', (positionData) => {
+		// player position in clientPlayerArray is given in location.x and location.y because they are objects created from classes
+		var currentlyUpdatingPlayerIndex = clientPlayerArray.map(function (player) { return player.id; }).indexOf(positionData.id);
 
-    clientPlayerArray[currentlyUpdatingPlayerIndex]['location']['x'] = positionData.x
-    clientPlayerArray[currentlyUpdatingPlayerIndex]['location']['y'] = positionData.y
-    clientPlayerArray[currentlyUpdatingPlayerIndex]['size'] = positionData.size
-  })
+		clientPlayerArray[currentlyUpdatingPlayerIndex]['location']['x'] = positionData.x
+		clientPlayerArray[currentlyUpdatingPlayerIndex]['location']['y'] = positionData.y
+		clientPlayerArray[currentlyUpdatingPlayerIndex]['size'] = positionData.size
+	})
 
-  socket.on('foodEaten', (eatenFoodIndex) => {
-    map.foodArray.splice(eatenFoodIndex, 1)
-  })
+	// socket.on('foodEaten', (eatenFoodIndex) => {
+	// 	map.foodArray.splice(eatenFoodIndex, 1)
+	// })
 
-  socket.on('foodGenerated', (generatedFood) => {
-    map.foodArray.push(generatedFood)
-  })
+	socket.on('foodGenerated', (generatedFood) => {
+		map.foodArray.push(generatedFood)
+	})
 
-  socket.on('playerDisconnected', (disconnectedPlayerId) => {
-    clientPlayerArray.splice(clientPlayerArray.indexOf(clientPlayerArray.filter(player => player.id == disconnectedPlayerId)), 1);
-  })
+	socket.on('playerDisconnected', (disconnectedPlayerId) => {
+		clientPlayerArray.splice(clientPlayerArray.indexOf(clientPlayerArray.filter(player => player.id == disconnectedPlayerId)), 1);
+	})
 
-  socket.on('eatenPlayer', data => {
-    console.log(data.eatenPlayerId + ' has been eaten')
+	socket.on('eatenPlayer', data => {
+		console.log(data.eatenPlayerId + ' got eaten')
 
-    if (data.eatenPlayerId == id) {
-      mainPlayer = false;
-      dead = true;
-    } else {
-      clientPlayerArray.splice(clientPlayerArray.indexOf(clientPlayerArray.filter(player => player.id == data.eatenPlayerId)), 1);
-    }
-  })
+		if (data.eatenPlayerId == id) {
+			mainPlayer = false;
+			dead = true;
+		} else {
+			clientPlayerArray.splice(clientPlayerArray.indexOf(clientPlayerArray.filter(player => player.id == data.eatenPlayerId)), 1);
+		}
+	})
 
-  socket.on('disconnect', () => disconnected = true)
-}
+	socket.on('disconnect', () => disconnected = true)
+
+	socket.on('foodEaten', (data) => {
+		// console.log('eaten food ' + data.foodIndex)
+
+		map.foodArray.splice(data.foodIndex, 1);
+
+		if (data.playerId == id) {
+			mainPlayer.size == data.size;
+		} else {
+			clientPlayerArray[clientPlayerArray.map((player) => { return player.id; }).indexOf(data.playerId)].size = data.size;
+		}
+	});
+
+	socket.on('playersUpdate', playerContainer => {
+		if (!dead) {
+			mainPlayer.location.x = playerContainer[id].x
+			mainPlayer.location.y = playerContainer[id].y
+			mainPlayer.size= playerContainer[id].size
+			delete playerContainer[id]
+		}
+		
+		for (player in playerContainer) {
+			var currentlyUpdatingPlayerIndex = clientPlayerArray.map((player) => {return player.id}).indexOf(player);
+			
+			// console.log('currently updating player ' + currentlyUpdatingPlayerIndex)
+			// console.log(playerContainer[player].x, playerContainer[player].y)
+			clientPlayerArray[currentlyUpdatingPlayerIndex].location.x = playerContainer[player].x
+			clientPlayerArray[currentlyUpdatingPlayerIndex].location.y = playerContainer[player].y
+			clientPlayerArray[currentlyUpdatingPlayerIndex].size = playerContainer[player].size
+		}
+	})
+};
 
 function draw() {
-  if (!map || !id) {
-    return;
-  }
+	if (!map || !id) {
+		return;
+	}
 
-  background(220);
+	background(220);
 
-  fill('white')
-  rect((0 - cameraX) * cameraZoom + windowWidth / 2, (0 - cameraY) * cameraZoom + windowHeight / 2, map.size.x * cameraZoom, map.size.y * cameraZoom)
+	fill('white')
+	rect((0 - cameraX) * cameraZoom + windowWidth / 2, (0 - cameraY) * cameraZoom + windowHeight / 2, map.size.x * cameraZoom, map.size.y * cameraZoom)
 
-  renderedFood = 0;
-  map.foodArray.forEach((food) => {
-    // cull food out of the screen to keep from lag on large maps
-    if (food.x > cameraX + (windowWidth / 2 + 10) / cameraZoom || food.x < cameraX - (windowWidth / 2 + 10) / cameraZoom || food.y > cameraY + (windowHeight / 2 + 10) / cameraZoom || food.y < cameraY - (windowHeight / 2 + 10) / cameraZoom) {
-      return;
-    }
-    fill(food.colour)
-    noStroke()
-    circle((food.x - cameraX) * cameraZoom + windowWidth / 2, (food.y - cameraY) * cameraZoom + windowHeight / 2, 10 * cameraZoom);
-    renderedFood++;
-  })
+	renderedFood = 0;
+	map.foodArray.forEach((food) => {
+		// cull food out of the screen to keep from lag on large maps
+		if (food.x > cameraX + (windowWidth / 2 + 10) / cameraZoom || food.x < cameraX - (windowWidth / 2 + 10) / cameraZoom || food.y > cameraY + (windowHeight / 2 + 10) / cameraZoom || food.y < cameraY - (windowHeight / 2 + 10) / cameraZoom) {
+			return;
+		}
+		fill(food.colour)
+		noStroke()
+		circle((food.x - cameraX) * cameraZoom + windowWidth / 2, (food.y - cameraY) * cameraZoom + windowHeight / 2, 10 * cameraZoom);
+		renderedFood++;
+	})
 
-  // TODO: this is an attempt at sorting... does it work?
-  clientPlayerArray.sort(function(a, b){return b.size - a.size})
+	// TODO: this is an attempt at sorting... does it work?
+	clientPlayerArray.sort(function (a, b) { return b.size - a.size })
 
-  // TODO: find a way to render the mainplayer in this loop... maybe add it in the clientplayerarray and do some magic to recognise it.
-  clientPlayerArray.forEach((player) => {
-    player.display("red", cameraX, cameraY, cameraZoom)
-  })
+	// TODO: find a way to render the mainplayer in this loop... maybe add it in the clientplayerarray and do some magic to recognise it.
+	clientPlayerArray.forEach((player) => {
+		player.display("red", cameraX, cameraY, cameraZoom)
+	})
 
-  if (mainPlayer) {
-    mainPlayer.display("blue", cameraX, cameraY, cameraZoom)
-    mainPlayer.move()
-    mainPlayer.checkEat(map.foodArray)
-    cameraX = mainPlayer.location.x
-    cameraY = mainPlayer.location.y
-  }
+	if (mainPlayer) {
+		cameraX = mainPlayer.location.x
+		cameraY = mainPlayer.location.y
+		mainPlayer.display("blue", cameraX, cameraY, cameraZoom)
+		// mainPlayer.move()
+		// mainPlayer.checkEat(map.foodArray)
+	}
 
-  if (cameraZoom > 20 / mainPlayer.size + 0.7) {
-    let zoomDifference = (cameraZoom - (20 / mainPlayer.size + 0.7)) / 20
-    if (zoomDifference < 0.0001) {
-      cameraZoom = 20 / mainPlayer.size + 0.7;
-    } else {
-      cameraZoom -= zoomDifference;
-    }
-  }
+	// TODO add shrinking zoom code
+	if (cameraZoom > 20 / mainPlayer.size + 0.7) {
+		let zoomDifference = (cameraZoom - (20 / mainPlayer.size + 0.7)) / 20
+		if (zoomDifference < 0.0001) {
+			cameraZoom = 20 / mainPlayer.size + 0.7;
+		} else {
+			cameraZoom -= zoomDifference;
+		}
+	}
 
-  // broadcasting loop
-  if (frames % 3 == 0 && mainPlayer) {
-    mainPlayer.emitPosition()
-  }
+	// broadcasting loop
+	if (frames % 3 == 0 && mainPlayer) {
+		// mainPlayer.emitPosition();
+		mainPlayer.emitRotation();
+	}
 
-  if (debugInfo == 1 || debugInfo == 2) {
-    textSize(16);
-    fill(0, 102, 153, 255);
-    text('Debug Data', 10, 20);
-    fill(0, 102, 153, 200);
-    text('Zoom: ' + cameraZoom + '/' + (cameraZoom - (20 / mainPlayer.size + 0.7)), 10, 40);
-    text('Camera X, Y: ' + Math.floor(cameraX) + ' , ' + Math.floor(cameraY), 10, 60);
-    text('Frame: ' + frames, 10, 80);
-    text('Other Players Count: ' + clientPlayerArray.length, 10, 100);
-    text('Total Food/Rendered Food: ' + map.foodArray.length + '/' + renderedFood, 10, 120);
-    text('Frames: ' + Math.floor(frameRate()), 10, 140);
-    text('Size: ' + mainPlayer.size, 10, 160);
-  }
-  if (dead) {
-    fill('black')
-    textSize(50)
-    text('You got eaten!', windowWidth / 2 - 160, windowHeight / 2);
-  }
-  if (disconnected) {
-    fill('black')
-    textSize(50)
-    text('You are disconnected from the server', windowWidth / 2 - 160, windowHeight / 2);
-  }
+	if (debugInfo == 1 || debugInfo == 2) {
+		textSize(16);
+		fill(0, 102, 153, 255);
+		text('Debug Data', 10, 20);
+		fill(0, 102, 153, 200);
+		text('Zoom: ' + cameraZoom + '/' + (cameraZoom - (20 / mainPlayer.size + 0.7)), 10, 40);
+		text('Camera X, Y: ' + Math.floor(cameraX) + ' , ' + Math.floor(cameraY), 10, 60);
+		text('Frame: ' + frames, 10, 80);
+		text('Other Players Count: ' + clientPlayerArray.length, 10, 100);
+		text('Total Food/Rendered Food: ' + map.foodArray.length + '/' + renderedFood, 10, 120);
+		text('Frames: ' + Math.floor(frameRate()), 10, 140);
+		text('Size: ' + mainPlayer.size, 10, 160);
+	}
+	if (dead) {
+		fill('black')
+		textSize(50)
+		text('You got eaten!', windowWidth / 2 - 160, windowHeight / 2);
+	}
+	if (disconnected) {
+		fill('black')
+		textSize(50)
+		text('You are disconnected from the server', windowWidth / 2 - 160, windowHeight / 2);
+	}
 
-  frames++;
+	frames++;
 }
 
 function keyPressed() {
-  if (keyCode === SHIFT) {
-    if (debugInfo == 1) {
-      debugInfo = 0;
-    } else {
-      debugInfo = 1;
-    }
-  }
+	if (keyCode === SHIFT) {
+		if (debugInfo == 1) {
+			debugInfo = 0;
+		} else {
+			debugInfo = 1;
+		}
+	}
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+	resizeCanvas(windowWidth, windowHeight);
 }
 
 function normalizeCoordinates(object) {
-  let magnitude = Math.sqrt(object.x * object.x + object.y * object.y)
-  return {
-    x: object.x / magnitude,
-    y: object.y / magnitude
-  };
+	if (!object) return;
+	let magnitude = Math.sqrt(object.x * object.x + object.y * object.y)
+	return {
+		x: object.x / magnitude,
+		y: object.y / magnitude
+	};
 }
 
 function calculateDistance(object1, object2) {
-  let differenceX = object1.x - object2.x;
-  let differenceY = object1.y - object2.y;
+	if (!object1 || !object2) return;
+	let differenceX = object1.x - object2.x;
+	let differenceY = object1.y - object2.y;
 
-  return Math.sqrt(differenceX * differenceX + differenceY * differenceY);
+	return Math.sqrt(differenceX * differenceX + differenceY * differenceY);
 }

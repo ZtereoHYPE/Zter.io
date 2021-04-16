@@ -1,4 +1,4 @@
-# Ztereo.io
+# Zter.io
 This is an attempt to ~~copy~~ remake the game Agar.io in node.js and P5.js.
 
 ## TODOs

@@ -79,6 +79,10 @@ function setup() {
 			mainPlayer = false;
 			dead = true;
 		} else {
+			if (data.eatingPlayerId == id) {
+				mainPlayer.size += data.eatenPlayerSize
+			}
+
 			clientPlayerArray.splice(clientPlayerArray.indexOf(clientPlayerArray.filter(player => player.id == data.eatenPlayerId)), 1);
 		}
 	})

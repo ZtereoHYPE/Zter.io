@@ -202,7 +202,11 @@ function tickLoop() {
 					eatenPlayerSize: playerContainer[smallerPlayer].size
 				};
 
+
+				playerContainer[largerPlayer].size += playerContainer[smallerPlayer].size
+
 				delete playerContainer[smallerPlayer];
+
 				io.sockets.emit('eatenPlayer', data);
 				playerCache.splice(playerCache.indexOf(playerCache.filter(playerId => playerId == smallerPlayer)), 1);
 				continue;

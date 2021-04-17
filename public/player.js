@@ -37,17 +37,8 @@ class Player {
 			this.velocity = normalizeCoordinates(this.velocity)
 		}
 
-
-		if (this.size > 100) {
-			this.velocity.x = this.velocity.x / (100 / 4) * 28
-			this.velocity.y = this.velocity.y / (100 / 4) * 28
-		} else {
-			this.velocity.x = this.velocity.x / (this.size / 4) * 28
-			this.velocity.y = this.velocity.y / (this.size / 4) * 28
-		}
-
-		this.location.x += this.velocity.x
-		this.location.y += this.velocity.y
+		this.location.x += this.velocity.x / this.size * 100
+		this.location.y += this.velocity.y / this.size * 100
 
 		if (this.location.x > map.size.x) {
 			this.location.x = map.size.x
@@ -63,32 +54,6 @@ class Player {
 		}
 	}
 
-	emitPosition() {
-		var data = {
-			id: id,
-			x: this.location.x,
-			y: this.location.y,
-			size: this.size
-		}
-
-		socket.emit('position', data)
-	}
-
-	checkEat(foodArray) {
-		foodArray.forEach((food) => {
-			if (calculateDistance(this.location, food) < this.size / 2 - 2) {
-				var data = foodArray.indexOf(food)
-
-				socket.emit('foodEaten', data)
-
-				foodArray.splice(foodArray.indexOf(food), 1);
-				this.size += 200 / this.size;
-
-				socket.emit('sizeDifference', this.size)
-			}
-		});
-	}
-
 	emitRotation() {
 		this.velocity.x = (mouseX - windowWidth / 2) / this.size
 		this.velocity.y = (mouseY - windowHeight / 2) / this.size
@@ -97,19 +62,10 @@ class Player {
 			this.velocity = normalizeCoordinates(this.velocity)
 		}
 
-		// if (this.size > 100) {
-		// 	this.velocity.x = this.velocity.x / (100 / 4) * 28
-		// 	this.velocity.y = this.velocity.y / (100 / 4) * 28
-		// } else {
-		// 	this.velocity.x = this.velocity.x / (this.size / 4) * 28
-		// 	this.velocity.y = this.velocity.y / (this.size / 4) * 28
-		// }
-		// console.log(this.velocity)
 		socket.emit('rotation', this.velocity)
 	}
 
 	interpolateLocation() {
-		
 		this.location.x += this.velocity.x / this.size * 100
 		this.location.y += this.velocity.y / this.size * 100
 

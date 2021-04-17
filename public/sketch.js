@@ -11,11 +11,9 @@ let renderedFood = 0;
 let dead = false;
 let disconnected = false;
 
-// make camera work using this https://editor.p5js.org/carl-vbn/sketches/L5AFIST1U
-
 function setup() {
 	frameRate(60)
-	socket = io.connect('http://localhost:3000')
+	socket = io.connect('http://loclhost:3000')
 
 	socket.on('playerId', (recievedId) => {
 		disconnected = false;
@@ -36,7 +34,6 @@ function setup() {
 			}
 		}
 		delete map['playerContainer'];
-		// console.log(map.foodArray)
 	})
 
 	socket.on('newPlayer', (playerId) => {
@@ -51,17 +48,12 @@ function setup() {
 	})
 
 	socket.on('playerPosition', (positionData) => {
-		// player position in clientPlayerArray is given in location.x and location.y because they are objects created from classes
 		var currentlyUpdatingPlayerIndex = clientPlayerArray.map(function (player) { return player.id; }).indexOf(positionData.id);
 
 		clientPlayerArray[currentlyUpdatingPlayerIndex]['location']['x'] = positionData.x
 		clientPlayerArray[currentlyUpdatingPlayerIndex]['location']['y'] = positionData.y
 		clientPlayerArray[currentlyUpdatingPlayerIndex]['size'] = positionData.size
 	})
-
-	// socket.on('foodEaten', (eatenFoodIndex) => {
-	// 	map.foodArray.splice(eatenFoodIndex, 1)
-	// })
 
 	socket.on('foodGenerated', (generatedFood) => {
 		map.foodArray.push(generatedFood)
@@ -89,8 +81,6 @@ function setup() {
 	socket.on('disconnect', () => disconnected = true)
 
 	socket.on('foodEaten', (data) => {
-		// console.log('eaten food ' + data.foodIndex)
-
 		map.foodArray.splice(data.foodIndex, 1);
 
 		if (data.playerId == id) {
@@ -112,8 +102,6 @@ function setup() {
 		for (player in playerContainer) {
 			var currentlyUpdatingPlayerIndex = clientPlayerArray.map((player) => {return player.id}).indexOf(player);
 			
-			// console.log('currently updating player ' + currentlyUpdatingPlayerIndex)
-			// console.log(playerContainer[player].x, playerContainer[player].y)
 			clientPlayerArray[currentlyUpdatingPlayerIndex].location.x = playerContainer[player].x
 			clientPlayerArray[currentlyUpdatingPlayerIndex].location.y = playerContainer[player].y
 			clientPlayerArray[currentlyUpdatingPlayerIndex].size = playerContainer[player].size
@@ -128,7 +116,6 @@ function draw() {
 		textSize(16);
 		fill(0, 102, 153, Math.sin(frameCount/20)*128 + 128);
 		text('Connecting...', 10, 20);
-		// text(frames, 10, 20);
 		return;
 	}
 
@@ -139,7 +126,6 @@ function draw() {
 
 	renderedFood = 0;
 	map.foodArray.forEach((food) => {
-		// cull food out of the screen to keep from lag on large maps
 		if (food.x > cameraX + (windowWidth / 2 + 10) / cameraZoom || food.x < cameraX - (windowWidth / 2 + 10) / cameraZoom || food.y > cameraY + (windowHeight / 2 + 10) / cameraZoom || food.y < cameraY - (windowHeight / 2 + 10) / cameraZoom) {
 			return;
 		}
@@ -153,18 +139,16 @@ function draw() {
 	clientPlayerArray.sort(function (a, b) { return b.size - a.size })
 
 	// TODO: find a way to render the mainplayer in this loop... maybe add it in the clientplayerarray and do some magic to recognise it.
-	clientPlayerArray.forEach((player) => {
+	for (player of clientPlayerArray) {
 		player.interpolateLocation()
 		player.display("red", cameraX, cameraY, cameraZoom)
-	})
+	}
 
 	if (mainPlayer) {
 		cameraX = mainPlayer.location.x
 		cameraY = mainPlayer.location.y
-		mainPlayer.interpolateLocation()
+		mainPlayer.move()
 		mainPlayer.display("blue", cameraX, cameraY, cameraZoom)
-		// mainPlayer.move()
-		// mainPlayer.checkEat(map.foodArray)
 	}
 
 	// TODO add shrinking zoom code
@@ -177,9 +161,7 @@ function draw() {
 		}
 	}
 
-	// broadcasting loop
 	if (frameCount % 3 == 0 && mainPlayer) {
-		// mainPlayer.emitPosition();
 		mainPlayer.emitRotation();
 	}
 
@@ -204,7 +186,7 @@ function draw() {
 	if (disconnected) {
 		fill('black')
 		textSize(50)
-		text('You are disconnected from the server', windowWidth / 2 - 160, windowHeight / 2);
+		text('You are disconnected from the server', windowWidth / 2 - 260, windowHeight / 2);
 	}
 }
 
@@ -223,7 +205,6 @@ function windowResized() {
 }
 
 function normalizeCoordinates(object) {
-	if (!object) return;
 	let magnitude = Math.sqrt(object.x * object.x + object.y * object.y)
 	return {
 		x: object.x / magnitude,
@@ -232,7 +213,6 @@ function normalizeCoordinates(object) {
 }
 
 function calculateDistance(object1, object2) {
-	if (!object1 || !object2) return;
 	let differenceX = object1.x - object2.x;
 	let differenceY = object1.y - object2.y;
 

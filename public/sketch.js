@@ -68,7 +68,6 @@ function setup() {
 		} else {
 			if (data.eatingPlayerId == id) {
 				mainPlayer.size += data.growingSize
-				console.log(data.growingSize)
 			}
 
 			clientPlayerArray.splice(clientPlayerArray.indexOf(clientPlayerArray.filter(player => player.id == data.eatenPlayerId)), 1);
@@ -140,12 +139,25 @@ function draw() {
 		player.display("red", cameraX, cameraY, cameraZoom)
 	}
 
-	if (mainPlayer) {
-		cameraX = mainPlayer.location.x
-		cameraY = mainPlayer.location.y
-		mainPlayer.move()
-		mainPlayer.display("blue", cameraX, cameraY, cameraZoom)
+	if (dead) {
+		fill('darkred')
+		textSize(50)
+		text('You got eaten!', windowWidth / 2 - 160, windowHeight / 2);
+		return
 	}
+
+	if (disconnected) {
+		fill('black')
+		textSize(50)
+		text('You are disconnected from the server', windowWidth / 2 - 260, windowHeight / 2);
+		return
+	}
+
+	cameraX = mainPlayer.location.x
+	cameraY = mainPlayer.location.y
+	mainPlayer.updateClientVelocity()
+	mainPlayer.interpolateLocation()
+	mainPlayer.display("blue", cameraX, cameraY, cameraZoom)
 
 	// TODO add shrinking zoom code
 	if (cameraZoom > 20 / mainPlayer.size + 0.7) {
@@ -173,16 +185,6 @@ function draw() {
 		text('Total Food/Rendered Food: ' + map.foodArray.length + '/' + renderedFood, 10, 120);
 		text('Frames: ' + Math.floor(frameRate()), 10, 140);
 		text('Size: ' + mainPlayer.size, 10, 160);
-	}
-	if (dead) {
-		fill('black')
-		textSize(50)
-		text('You got eaten!', windowWidth / 2 - 160, windowHeight / 2);
-	}
-	if (disconnected) {
-		fill('black')
-		textSize(50)
-		text('You are disconnected from the server', windowWidth / 2 - 260, windowHeight / 2);
 	}
 }
 

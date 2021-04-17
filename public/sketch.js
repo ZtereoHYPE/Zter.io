@@ -3,7 +3,6 @@ let id;
 let clientPlayerArray = [];
 let mainPlayer;
 var socket;
-let frames = 0;
 let cameraX = 0;
 let cameraY = 0;
 let cameraZoom = 3;
@@ -103,6 +102,7 @@ function setup() {
 
 	socket.on('playersUpdate', playerContainer => {
 		if (!dead) {
+
 			mainPlayer.location.x = playerContainer[id].x
 			mainPlayer.location.y = playerContainer[id].y
 			mainPlayer.size= playerContainer[id].size
@@ -117,12 +117,18 @@ function setup() {
 			clientPlayerArray[currentlyUpdatingPlayerIndex].location.x = playerContainer[player].x
 			clientPlayerArray[currentlyUpdatingPlayerIndex].location.y = playerContainer[player].y
 			clientPlayerArray[currentlyUpdatingPlayerIndex].size = playerContainer[player].size
+			clientPlayerArray[currentlyUpdatingPlayerIndex].velocity = playerContainer[player].velocity
 		}
 	})
 };
 
 function draw() {
 	if (!map || !id) {
+		background(255);
+		textSize(16);
+		fill(0, 102, 153, Math.sin(frameCount/20)*128 + 128);
+		text('Connecting...', 10, 20);
+		// text(frames, 10, 20);
 		return;
 	}
 
@@ -148,12 +154,14 @@ function draw() {
 
 	// TODO: find a way to render the mainplayer in this loop... maybe add it in the clientplayerarray and do some magic to recognise it.
 	clientPlayerArray.forEach((player) => {
+		player.interpolateLocation()
 		player.display("red", cameraX, cameraY, cameraZoom)
 	})
 
 	if (mainPlayer) {
 		cameraX = mainPlayer.location.x
 		cameraY = mainPlayer.location.y
+		mainPlayer.interpolateLocation()
 		mainPlayer.display("blue", cameraX, cameraY, cameraZoom)
 		// mainPlayer.move()
 		// mainPlayer.checkEat(map.foodArray)
@@ -170,7 +178,7 @@ function draw() {
 	}
 
 	// broadcasting loop
-	if (frames % 3 == 0 && mainPlayer) {
+	if (frameCount % 3 == 0 && mainPlayer) {
 		// mainPlayer.emitPosition();
 		mainPlayer.emitRotation();
 	}
@@ -182,7 +190,7 @@ function draw() {
 		fill(0, 102, 153, 200);
 		text('Zoom: ' + cameraZoom + '/' + (cameraZoom - (20 / mainPlayer.size + 0.7)), 10, 40);
 		text('Camera X, Y: ' + Math.floor(cameraX) + ' , ' + Math.floor(cameraY), 10, 60);
-		text('Frame: ' + frames, 10, 80);
+		text('Frame: ' + frameCount, 10, 80);
 		text('Other Players Count: ' + clientPlayerArray.length, 10, 100);
 		text('Total Food/Rendered Food: ' + map.foodArray.length + '/' + renderedFood, 10, 120);
 		text('Frames: ' + Math.floor(frameRate()), 10, 140);
@@ -198,8 +206,6 @@ function draw() {
 		textSize(50)
 		text('You are disconnected from the server', windowWidth / 2 - 160, windowHeight / 2);
 	}
-
-	frames++;
 }
 
 function keyPressed() {

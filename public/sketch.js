@@ -13,7 +13,7 @@ let disconnected = false;
 
 function setup() {
 	frameRate(60)
-	socket = io.connect('http://loclhost:3000')
+	socket = io.connect('http://localhost:3000')
 
 	socket.on('playerId', (recievedId) => {
 		disconnected = false;
@@ -71,7 +71,8 @@ function setup() {
 			dead = true;
 		} else {
 			if (data.eatingPlayerId == id) {
-				mainPlayer.size += data.eatenPlayerSize
+				mainPlayer.size += data.growingSize
+				console.log(data.growingSize)
 			}
 
 			clientPlayerArray.splice(clientPlayerArray.indexOf(clientPlayerArray.filter(player => player.id == data.eatenPlayerId)), 1);
@@ -92,16 +93,15 @@ function setup() {
 
 	socket.on('playersUpdate', playerContainer => {
 		if (!dead) {
-
 			mainPlayer.location.x = playerContainer[id].x
 			mainPlayer.location.y = playerContainer[id].y
-			mainPlayer.size= playerContainer[id].size
+			mainPlayer.size = playerContainer[id].size
 			delete playerContainer[id]
 		}
-		
+
 		for (player in playerContainer) {
-			var currentlyUpdatingPlayerIndex = clientPlayerArray.map((player) => {return player.id}).indexOf(player);
-			
+			var currentlyUpdatingPlayerIndex = clientPlayerArray.map((player) => { return player.id }).indexOf(player);
+
 			clientPlayerArray[currentlyUpdatingPlayerIndex].location.x = playerContainer[player].x
 			clientPlayerArray[currentlyUpdatingPlayerIndex].location.y = playerContainer[player].y
 			clientPlayerArray[currentlyUpdatingPlayerIndex].size = playerContainer[player].size
@@ -114,7 +114,7 @@ function draw() {
 	if (!map || !id) {
 		background(255);
 		textSize(16);
-		fill(0, 102, 153, Math.sin(frameCount/20)*128 + 128);
+		fill(0, 102, 153, Math.sin(frameCount / 20) * 128 + 128);
 		text('Connecting...', 10, 20);
 		return;
 	}

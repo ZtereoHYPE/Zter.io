@@ -30,27 +30,11 @@ class Player {
 		text(this.id, (this.location.x - cameraX) * cameraZoom + windowWidth / 2, (this.location.y - cameraY) * cameraZoom + windowHeight / 2);
 	}
 
-	move() {
+	updateClientVelocity() {
 		this.velocity.x = (mouseX - windowWidth / 2) / this.size
 		this.velocity.y = (mouseY - windowHeight / 2) / this.size
 		if (Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y) > 1) {
 			this.velocity = normalizeCoordinates(this.velocity)
-		}
-
-		this.location.x += this.velocity.x / this.size * 100
-		this.location.y += this.velocity.y / this.size * 100
-
-		if (this.location.x > map.size.x) {
-			this.location.x = map.size.x
-		}
-		if (this.location.x < 0) {
-			this.location.x = 0
-		}
-		if (this.location.y > map.size.y) {
-			this.location.y = map.size.y
-		}
-		if (this.location.y < 0) {
-			this.location.y = 0
 		}
 	}
 

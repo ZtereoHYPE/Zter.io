@@ -116,16 +116,19 @@ function tickLoop() {
 	// update locations aka move 'em
 	for (player in playerContainer) {
 		// TODO: change this 'algorithm' to keep slowing down but less and less idk find a balance
-		if (playerContainer[player]['size'] > 130) {
-			playerContainer[player]['x'] += playerContainer[player]['velocity']['x'] / 25 * 61
-			playerContainer[player]['y'] += playerContainer[player]['velocity']['y'] / 25 * 61
-		} else {
-			playerContainer[player]['x'] += playerContainer[player]['velocity']['x'] / playerContainer[player]['size'] * 61
-			playerContainer[player]['y'] += playerContainer[player]['velocity']['y'] / playerContainer[player]['size'] * 61
-		};
+		playerContainer[player]['x'] += playerContainer[player]['velocity']['x'] / playerContainer[player]['size'] * 300
+		playerContainer[player]['y'] += playerContainer[player]['velocity']['y'] / playerContainer[player]['size'] * 300
+
+		// if (playerContainer[player]['size'] > 130) {
+		// 	playerContainer[player]['x'] += playerContainer[player]['velocity']['x'] * 4
+		// 	playerContainer[player]['y'] += playerContainer[player]['velocity']['y'] * 4 
+		// } else {
+		// 	playerContainer[player]['x'] += playerContainer[player]['velocity']['x'] / playerContainer[player]['size']
+		// 	playerContainer[player]['y'] += playerContainer[player]['velocity']['y'] / playerContainer[player]['size'] 
+		// };
 
 		if (playerContainer[player].x > size.x) {
-		playerContainer[player].x = size.x
+			playerContainer[player].x = size.x
 		}
 		if (playerContainer[player].x < 0) {
 			playerContainer[player].x = 0

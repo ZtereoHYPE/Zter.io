@@ -33,10 +33,8 @@ for (i = 0; i < size.x / 5; i++) {
 
 // When a new client connects
 function connectionEvent(socket) {
-	// Console.log it
 	console.log('New connection: ' + socket.id);
 
-	// Add a player object in the playerContainer
 	playerContainer[socket.id] = {
 		x: size.x / 2,
 		y: size.y / 2,
@@ -47,49 +45,15 @@ function connectionEvent(socket) {
 		}
 	};
 
-	// Send to the player their own id so they know what player of the container they are
 	socket.emit('playerId', socket.id);
 
-	// Send the player the entire map
 	socket.emit('mapData', { foodArray, playerContainer, size });
 
-	// Broadcast to other players the new player object
 	socket.broadcast.emit('newPlayer', socket.id);
-
-	// Add an event listener for position, which executes updatePlayer
-	socket.on('position', updatePlayer);
-
-	// TODO change the system to be server side maybe? idk
-	socket.on('foodEaten', broacastFoodEaten);
 
 	socket.on('disconnect', disconnectPlayer);
 
-	socket.on('sizeDifference', updateSizes);
-
 	socket.on('rotation', updateVelocity)
-
-	// Update the player position in the server-side map and broadcast it to others
-	function updatePlayer(positionData) {
-		let id = positionData.id
-
-		if (!playerContainer[id]) return;
-
-		playerContainer[id]["x"] = positionData.x;
-		playerContainer[id]["y"] = positionData.y;
-
-		socket.broadcast.emit('playerPosition', positionData);
-	};
-
-	// Broadcast the eaten food index. While there are less than 70 foods, push to the food array the new food and broadcast it
-	function broacastFoodEaten(eatenFoodIndex) {
-		socket.broadcast.emit('foodEaten', eatenFoodIndex);
-		foodArray.splice(eatenFoodIndex, 1);
-	};
-
-	function updateSizes(size) {
-		if (!playerContainer[this.id]) return;
-		playerContainer[this.id]['size'] = size;
-	};
 
 	function updateVelocity(velocity) {
 		if (!playerContainer[this.id]) return;
@@ -104,11 +68,6 @@ function disconnectPlayer() {
 	io.sockets.emit('playerDisconnected', this.id)
 };
 
-function calculateDistance(object1, object2) {
-	let differenceX = object1.x - object2.x;
-	let differenceY = object1.y - object2.y;
-	return Math.sqrt(differenceX * differenceX + differenceY * differenceY);
-};
 
 setInterval(tickLoop, 50);
 
@@ -118,15 +77,7 @@ function tickLoop() {
 		// TODO: change this 'algorithm' to keep slowing down but less and less idk find a balance
 		playerContainer[player]['x'] += playerContainer[player]['velocity']['x'] / playerContainer[player]['size'] * 300
 		playerContainer[player]['y'] += playerContainer[player]['velocity']['y'] / playerContainer[player]['size'] * 300
-
-		// if (playerContainer[player]['size'] > 130) {
-		// 	playerContainer[player]['x'] += playerContainer[player]['velocity']['x'] * 4
-		// 	playerContainer[player]['y'] += playerContainer[player]['velocity']['y'] * 4 
-		// } else {
-		// 	playerContainer[player]['x'] += playerContainer[player]['velocity']['x'] / playerContainer[player]['size']
-		// 	playerContainer[player]['y'] += playerContainer[player]['velocity']['y'] / playerContainer[player]['size'] 
-		// };
-
+		
 		if (playerContainer[player].x > size.x) {
 			playerContainer[player].x = size.x
 		}
@@ -140,23 +91,23 @@ function tickLoop() {
 			playerContainer[player].y = 0
 		}
 	};
-
+	
 	// check for food eating
 	for (player in playerContainer) {
 		for (food of foodArray) {
 			if (calculateDistance(playerContainer[player], food) < playerContainer[player].size / 2 - 2) {
 				playerContainer[player].size += 200 / playerContainer[player].size;
-
+				
 				var data = {
 					foodIndex: foodArray.indexOf(food),
 					playerId: player,
 					size: playerContainer[player].size
 				};
-
+				
 				foodArray.splice(data.foodIndex, 1);
-
+				
 				io.sockets.emit('foodEaten', data);
-
+				
 				while (foodArray.length < size.x / 5) {
 					let food = {
 						x: Math.floor(Math.random() * size.x),
@@ -169,51 +120,57 @@ function tickLoop() {
 			};
 		};
 	};
-
-
-
+	
+	
+	
 	// TODO: send this after everything and find more efficient method to update only the ones that moved/ate or only the data we care about
 	io.sockets.emit('playersUpdate', playerContainer);
-
+	
 	// TODO find a way to order the array in size in order to skip check for bigger or smaller player later (if it's faster)
 	// Maybe to not sort it everytime check if the number changed and if yes then redo and sort and if no then check if every element is same and then if yes reuse old (if ever sorting is slow)
 	let playerCache = Object.keys(playerContainer);
-
+	
 	for (let i = 0; i < playerCache.length - 1; i++) {
 		for (let j = i + 1; j < playerCache.length; j++) {
-
+			
 			// TODO remove this when the array is ordered and do smart stuff to know the bigger one
 			if (playerContainer[playerCache[i]].size > playerContainer[playerCache[j]].size) {
 				largerPlayer = playerCache[i];
 				smallerPlayer = playerCache[j];
-
+				
 			} else if (playerContainer[playerCache[i]].size < playerContainer[playerCache[j]].size) {
 				smallerPlayer = playerCache[i];
 				largerPlayer = playerCache[j];
-
+				
 			} else {
 				console.log('identical players found, skipping')
 				continue;
 			};
-
+			
 			if (calculateDistance(playerContainer[smallerPlayer], playerContainer[largerPlayer]) < playerContainer[largerPlayer].size / 2) {
 				console.log(smallerPlayer + ' got eaten')
-
+				
 				let data = {
 					eatenPlayerId: smallerPlayer,
 					eatingPlayerId: largerPlayer,
 					eatenPlayerSize: playerContainer[smallerPlayer].size
 				};
-
-
+				
+				
 				playerContainer[largerPlayer].size += playerContainer[smallerPlayer].size
-
+				
 				delete playerContainer[smallerPlayer];
-
+				
 				io.sockets.emit('eatenPlayer', data);
 				playerCache.splice(playerCache.indexOf(playerCache.filter(playerId => playerId == smallerPlayer)), 1);
 				continue;
 			};
 		};
 	};
+};
+
+function calculateDistance(object1, object2) {
+	let differenceX = object1.x - object2.x;
+	let differenceY = object1.y - object2.y;
+	return Math.sqrt(differenceX * differenceX + differenceY * differenceY);
 };

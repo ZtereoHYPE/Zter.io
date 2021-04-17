@@ -1,108 +1,129 @@
 class Player {
-  constructor(playerObject, playerId) {
-    this.location = {
-      x: playerObject.x,
-      y: playerObject.y
-    }
-    this.size = playerObject.size;
-    this.renderedSize = 0
-    this.id = playerId;
-    this.velocity = {
-      x: 0,
-      y: 0
-    }
-  }
+	constructor(playerObject, playerId) {
+		this.location = {
+			x: playerObject.x,
+			y: playerObject.y
+		}
+		this.size = playerObject.size;
+		this.renderedSize = 0
+		this.id = playerId;
+		this.velocity = {
+			x: 0,
+			y: 0
+		};
+	}
 
-  display(colour, cameraX, cameraY, cameraZoom) {
-    if (this.renderedSize < this.size) {
-      let sizeDifference = (this.size - this.renderedSize)/7
-      if (sizeDifference < 0.001) {
-        this.renderedSize = this.size
-      } else {
-        this.renderedSize += sizeDifference
-      }
-    }
-    fill(colour);
-    noStroke();
-    circle((this.location.x-cameraX)*cameraZoom + windowWidth/2, (this.location.y-cameraY)*cameraZoom + windowHeight/2, this.renderedSize*cameraZoom);
-    fill('black');
-    text(this.id, (this.location.x-cameraX)*cameraZoom + windowWidth/2, (this.location.y-cameraY)*cameraZoom + windowHeight/2);
-  }
+	display(colour, cameraX, cameraY, cameraZoom) {
+		if (this.renderedSize < this.size) {
+			let sizeDifference = (this.size - this.renderedSize) / 7
+			if (sizeDifference < 0.001) {
+				this.renderedSize = this.size
+			} else {
+				this.renderedSize += sizeDifference
+			}
+		}
 
-  move() {
-    this.velocity.x = (mouseX - windowWidth/2)/this.size
-    this.velocity.y = (mouseY - windowHeight/2)/this.size
-    if (Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y) > 1) {
-      this.velocity = normalizeCoordinates(this.velocity)
-    }
-    
+		fill(colour);
+		noStroke();
+		circle((this.location.x - cameraX) * cameraZoom + windowWidth / 2, (this.location.y - cameraY) * cameraZoom + windowHeight / 2, this.renderedSize * cameraZoom);
+		fill('black');
+		text(this.id, (this.location.x - cameraX) * cameraZoom + windowWidth / 2, (this.location.y - cameraY) * cameraZoom + windowHeight / 2);
+	}
 
-    if (this.size > 100) {
-      this.velocity.x = this.velocity.x / (100 / 4) * 28
-      this.velocity.y = this.velocity.y / (100 / 4) * 28
-    } else {
-      this.velocity.x = this.velocity.x / (this.size / 4) * 28
-      this.velocity.y = this.velocity.y / (this.size / 4) * 28
-    }
+	move() {
+		this.velocity.x = (mouseX - windowWidth / 2) / this.size
+		this.velocity.y = (mouseY - windowHeight / 2) / this.size
+		if (Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y) > 1) {
+			this.velocity = normalizeCoordinates(this.velocity)
+		}
 
-    this.location.x += this.velocity.x
-    this.location.y += this.velocity.y
 
-    if (this.location.x > map.size.x) {
-      this.location.x = map.size.x
-    }
-    if (this.location.x < 0) {
-      this.location.x = 0
-    }
-    if (this.location.y > map.size.y) {
-      this.location.y = map.size.y
-    }
-    if (this.location.y < 0) {
-      this.location.y = 0
-    }
-  }
+		if (this.size > 100) {
+			this.velocity.x = this.velocity.x / (100 / 4) * 28
+			this.velocity.y = this.velocity.y / (100 / 4) * 28
+		} else {
+			this.velocity.x = this.velocity.x / (this.size / 4) * 28
+			this.velocity.y = this.velocity.y / (this.size / 4) * 28
+		}
 
-  emitPosition() {
-    var data = {
-      id: id,
-      x: this.location.x,
-      y: this.location.y,
-      size: this.size
-    }
+		this.location.x += this.velocity.x
+		this.location.y += this.velocity.y
 
-    socket.emit('position', data)
-  }
+		if (this.location.x > map.size.x) {
+			this.location.x = map.size.x
+		}
+		if (this.location.x < 0) {
+			this.location.x = 0
+		}
+		if (this.location.y > map.size.y) {
+			this.location.y = map.size.y
+		}
+		if (this.location.y < 0) {
+			this.location.y = 0
+		}
+	}
 
-  checkEat(foodArray) {
-    foodArray.forEach((food) => {
-      if (calculateDistance(this.location, food) < this.size / 2 - 2) {
-        var data = foodArray.indexOf(food)
-    
-        socket.emit('foodEaten', data)
+	emitPosition() {
+		var data = {
+			id: id,
+			x: this.location.x,
+			y: this.location.y,
+			size: this.size
+		}
 
-        foodArray.splice(foodArray.indexOf(food), 1);
-        this.size += 200 / this.size;
+		socket.emit('position', data)
+	}
 
-        socket.emit('sizeDifference', this.size)
-      }
-    });
-  }
+	checkEat(foodArray) {
+		foodArray.forEach((food) => {
+			if (calculateDistance(this.location, food) < this.size / 2 - 2) {
+				var data = foodArray.indexOf(food)
 
-  emitRotation() {
-    this.velocity.x = (mouseX - windowWidth/2)/this.size
-    this.velocity.y = (mouseY - windowHeight/2)/this.size
-    if (Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y) > 1) {
-      this.velocity = normalizeCoordinates(this.velocity)
-    }
-    
-    if (this.size > 100) {
-      this.velocity.x = this.velocity.x / (100 / 4) * 28
-      this.velocity.y = this.velocity.y / (100 / 4) * 28
-    } else {
-      this.velocity.x = this.velocity.x / (this.size / 4) * 28
-      this.velocity.y = this.velocity.y / (this.size / 4) * 28
-    }
+				socket.emit('foodEaten', data)
 
-    socket.emit('rotation', this.velocity)
-  }
+				foodArray.splice(foodArray.indexOf(food), 1);
+				this.size += 200 / this.size;
+
+				socket.emit('sizeDifference', this.size)
+			}
+		});
+	}
+
+	emitRotation() {
+		this.velocity.x = (mouseX - windowWidth / 2) / this.size
+		this.velocity.y = (mouseY - windowHeight / 2) / this.size
+
+		if (Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y) > 1) {
+			this.velocity = normalizeCoordinates(this.velocity)
+		}
+
+		// if (this.size > 100) {
+		// 	this.velocity.x = this.velocity.x / (100 / 4) * 28
+		// 	this.velocity.y = this.velocity.y / (100 / 4) * 28
+		// } else {
+		// 	this.velocity.x = this.velocity.x / (this.size / 4) * 28
+		// 	this.velocity.y = this.velocity.y / (this.size / 4) * 28
+		// }
+		// console.log(this.velocity)
+		socket.emit('rotation', this.velocity)
+	}
+
+	interpolateLocation() {
+		
+		this.location.x += this.velocity.x / this.size * 100
+		this.location.y += this.velocity.y / this.size * 100
+
+		if (this.location.x > map.size.x) {
+			this.location.x = map.size.x
+		}
+		if (this.location.x < 0) {
+			this.location.x = 0
+		}
+		if (this.location.y > map.size.y) {
+			this.location.y = map.size.y
+		}
+		if (this.location.y < 0) {
+			this.location.y = 0
+		}
+	}
 }

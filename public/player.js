@@ -8,8 +8,8 @@ class Player {
 		this.renderedSize = 0
 		this.id = playerId;
 		this.velocity = {
-			x: 0,
-			y: 0
+			x: playerObject.velocity.x,
+			y: playerObject.velocity.y
 		};
 	}
 

@@ -2,19 +2,13 @@
 This is an attempt to ~~copy~~ remake the game Agar.io in node.js and P5.js.
 
 ## TODOs
-- After implementing everythinbg make a ticc loop
-- Move player movement/food server side
-    - Everything should be server-side, ideally the player would only send their rotation and the server would normalise it.
-- Fix broken player eating check code => first skip if they are the same && do not check twice per player...
-- Make them bois grow when eating
+- Make them bois grow when eating of an amount dependent on their size
 - Clean up code and rename socket thingies.
-- Make the server broadcast new players joining, currently i dont even understand why the code is working.
 - Make the colours be assigned based on the ID and make players have a name.
 - Make an UI where players can connect and choose name and where they end up when dying.
 
 ## TODON'Ts
 - Splitting and merging. Don't even think of that nightmare. (I do accept contributions though)
 
-## Know bugs
-- Players die for no reason
-- Players become invisible
+## Contributions
+i dont see why you should contribute to this honestly lol the code is a mess

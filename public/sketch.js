@@ -36,23 +36,19 @@ function setup() {
 		delete map['playerContainer'];
 	})
 
-	socket.on('newPlayer', (playerId) => {
+	socket.on('newPlayer', (playerObject) => {
 		console.log('New player connected')
 		clientPlayerArray.push(new Player(
 			{
-				x: map.size.x / 2,
-				y: map.size.x / 2,
-				size: 20
+				x: playerObject.playerEntity.x,
+				y: playerObject.playerEntity.y,
+				size: playerObject.playerEntity.size,
+				velocity: {
+					x: playerObject.playerEntity.velocity.x,
+					y: playerObject.playerEntity.velocity.y
+				}
 			},
-			playerId))
-	})
-
-	socket.on('playerPosition', (positionData) => {
-		var currentlyUpdatingPlayerIndex = clientPlayerArray.map(function (player) { return player.id; }).indexOf(positionData.id);
-
-		clientPlayerArray[currentlyUpdatingPlayerIndex]['location']['x'] = positionData.x
-		clientPlayerArray[currentlyUpdatingPlayerIndex]['location']['y'] = positionData.y
-		clientPlayerArray[currentlyUpdatingPlayerIndex]['size'] = positionData.size
+			playerObject.playerId))
 	})
 
 	socket.on('foodGenerated', (generatedFood) => {

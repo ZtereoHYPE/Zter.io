@@ -54,6 +54,7 @@ function connectionEvent(socket) {
 	};
 	function disconnectPlayer() {
 		console.log('Player disconnected: ' + this.id);
+		if (!playerContainer[this.id]) return console.log('the player was dead, already deleted');
 		delete playerContainer[this.id];
 		io.sockets.emit('playerDisconnected', this.id)
 	};
@@ -130,7 +131,7 @@ function tickLoop() {
 				largerPlayer = playerCache[j];
 				
 			} else {
-				console.log('identical players found, skipping')
+				// console.log('identical players found, skipping')
 				continue;
 			};
 			

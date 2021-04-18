@@ -28,7 +28,9 @@ class Player {
 		circle((this.location.x - cameraX) * cameraZoom + windowWidth / 2, (this.location.y - cameraY) * cameraZoom + windowHeight / 2, this.renderedSize * cameraZoom);
 	}
 
-	updateClientVelocity() {
+	updateLocalClientData() {
+		cameraY = player.location.y
+		cameraX = player.location.x
 		this.velocity.x = (mouseX - windowWidth / 2) / this.size
 		this.velocity.y = (mouseY - windowHeight / 2) / this.size
 		if (Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y) > 1) {

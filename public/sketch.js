@@ -1,8 +1,8 @@
-let map;
+let foodArray = [];
+let size;
 let id;
 let clientPlayerArray = [];
 let mainPlayer;
-var socket;
 let cameraX = 0;
 let cameraY = 0;
 let cameraZoom = 3;
@@ -12,28 +12,24 @@ let dead = false;
 let disconnected = false;
 
 function setup() {
-	frameRate(60)
-	socket = io.connect('http://localhost:3000')
+	frameRate(60);
+	createCanvas(windowWidth, windowHeight);
+	socket = io.connect('http://localhost:3000');
 
-	socket.on('playerId', (recievedId) => {
+	socket.on('gameData', (recievedData) => {
 		disconnected = false;
-		id = recievedId
-		console.log('Recieved ID: ' + id)
-	})
+		foodArray = recievedData.foodArray;
+		size = recievedData.size;
+		id = recievedData.id;
+		console.log('Recieved game data')
 
-	socket.on('mapData', (recievedMap) => {
-		map = recievedMap;
-		console.log('Recieved game map')
-		createCanvas(windowWidth, windowHeight);
-
-		for (playerObject in map.playerContainer) {
+		for (playerObject in recievedData.playerContainer) {
 			if (playerObject != id) {
-				clientPlayerArray.push(new Player(map['playerContainer'][playerObject], playerObject))
+				clientPlayerArray.push(new Player(recievedData.playerContainer[playerObject], playerObject))
 			} else {
-				mainPlayer = new Player(map['playerContainer'][playerObject], playerObject)
+				mainPlayer = new Player(recievedData.playerContainer[playerObject], playerObject)
 			}
 		}
-		delete map['playerContainer'];
 	})
 
 	socket.on('newPlayer', (playerObject) => {
@@ -52,7 +48,7 @@ function setup() {
 	})
 
 	socket.on('foodGenerated', (generatedFood) => {
-		map.foodArray.push(generatedFood)
+		foodArray.push(generatedFood)
 	})
 
 	socket.on('playerDisconnected', (disconnectedPlayerId) => {
@@ -73,19 +69,17 @@ function setup() {
 			clientPlayerArray.splice(clientPlayerArray.indexOf(clientPlayerArray.filter(player => player.id == data.eatenPlayerId)), 1);
 		}
 	})
-
-	socket.on('disconnect', () => disconnected = true)
-
+	
 	socket.on('foodEaten', (data) => {
-		map.foodArray.splice(data.foodIndex, 1);
-
+		foodArray.splice(data.foodIndex, 1);
+		
 		if (data.playerId == id) {
 			mainPlayer.size == data.size;
 		} else {
 			clientPlayerArray[clientPlayerArray.map((player) => { return player.id; }).indexOf(data.playerId)].size = data.size;
 		}
 	});
-
+	
 	socket.on('playersUpdate', playerContainer => {
 		if (!dead) {
 			mainPlayer.location.x = playerContainer[id].x
@@ -93,20 +87,21 @@ function setup() {
 			mainPlayer.size = playerContainer[id].size
 			delete playerContainer[id]
 		}
-
+		
 		for (player in playerContainer) {
 			var currentlyUpdatingPlayerIndex = clientPlayerArray.map((player) => { return player.id }).indexOf(player);
-
 			clientPlayerArray[currentlyUpdatingPlayerIndex].location.x = playerContainer[player].x
 			clientPlayerArray[currentlyUpdatingPlayerIndex].location.y = playerContainer[player].y
 			clientPlayerArray[currentlyUpdatingPlayerIndex].size = playerContainer[player].size
 			clientPlayerArray[currentlyUpdatingPlayerIndex].velocity = playerContainer[player].velocity
 		}
 	})
+
+	socket.on('disconnect', () => disconnected = true)
 };
 
 function draw() {
-	if (!map || !id) {
+	if (!id) {
 		background(255);
 		textSize(16);
 		fill(0, 102, 153, Math.sin(frameCount / 20) * 128 + 128);
@@ -117,10 +112,10 @@ function draw() {
 	background(220);
 
 	fill('white')
-	rect((0 - cameraX) * cameraZoom + windowWidth / 2, (0 - cameraY) * cameraZoom + windowHeight / 2, map.size.x * cameraZoom, map.size.y * cameraZoom)
+	rect((0 - cameraX) * cameraZoom + windowWidth / 2, (0 - cameraY) * cameraZoom + windowHeight / 2, size.x * cameraZoom, size.y * cameraZoom)
 
 	renderedFood = 0;
-	map.foodArray.forEach((food) => {
+	foodArray.forEach((food) => {
 		if (food.x > cameraX + (windowWidth / 2 + 10) / cameraZoom || food.x < cameraX - (windowWidth / 2 + 10) / cameraZoom || food.y > cameraY + (windowHeight / 2 + 10) / cameraZoom || food.y < cameraY - (windowHeight / 2 + 10) / cameraZoom) {
 			return;
 		}
@@ -128,15 +123,19 @@ function draw() {
 		noStroke()
 		circle((food.x - cameraX) * cameraZoom + windowWidth / 2, (food.y - cameraY) * cameraZoom + windowHeight / 2, 10 * cameraZoom);
 		renderedFood++;
-	})
+	});
 
 	// TODO: this is an attempt at sorting... does it work?
 	clientPlayerArray.sort(function (a, b) { return b.size - a.size })
 
 	// TODO: find a way to render the mainplayer in this loop... maybe add it in the clientplayerarray and do some magic to recognise it.
 	for (player of clientPlayerArray) {
-		player.interpolateLocation()
-		player.display("red", cameraX, cameraY, cameraZoom)
+		if (player.id == id) {
+
+		} else {
+			player.interpolateLocation()
+			player.display("red", cameraX, cameraY, cameraZoom)
+		}
 	}
 
 	if (dead) {
@@ -159,7 +158,14 @@ function draw() {
 	mainPlayer.interpolateLocation()
 	mainPlayer.display("blue", cameraX, cameraY, cameraZoom)
 
-	// TODO add shrinking zoom code
+	if (cameraZoom < 20 / mainPlayer.size + 0.7) {
+		let zoomDifference = ((20 / mainPlayer.size + 0.7) - cameraZoom) / 20
+		if (zoomDifference < 0.0001) {
+			cameraZoom = 20 / mainPlayer.size + 0.7;
+		} else {
+			cameraZoom += zoomDifference;
+		}
+	}
 	if (cameraZoom > 20 / mainPlayer.size + 0.7) {
 		let zoomDifference = (cameraZoom - (20 / mainPlayer.size + 0.7)) / 20
 		if (zoomDifference < 0.0001) {
@@ -182,7 +188,7 @@ function draw() {
 		text('Camera X, Y: ' + Math.floor(cameraX) + ' , ' + Math.floor(cameraY), 10, 60);
 		text('Frame: ' + frameCount, 10, 80);
 		text('Other Players Count: ' + clientPlayerArray.length, 10, 100);
-		text('Total Food/Rendered Food: ' + map.foodArray.length + '/' + renderedFood, 10, 120);
+		text('Total Food/Rendered Food: ' + foodArray.length + '/' + renderedFood, 10, 120);
 		text('Frames: ' + Math.floor(frameRate()), 10, 140);
 		text('Size: ' + mainPlayer.size, 10, 160);
 	}

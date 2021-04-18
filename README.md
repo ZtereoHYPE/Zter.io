@@ -2,8 +2,6 @@
 This is an attempt to ~~copy~~ remake the game Agar.io in node.js and P5.js.
 
 ## TODOs
-- Make them bois grow when eating of an amount dependent on their size
-- Clean up code and rename socket thingies.
 - Make the colours be assigned based on the ID and make players have a name.
 - Make an UI where players can connect and choose name and where they end up when dying.
 

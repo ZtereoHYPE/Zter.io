@@ -38,8 +38,12 @@ function connectionEvent(socket) {
 		}
 	};
 
-	socket.emit('playerId', socket.id);
-	socket.emit('mapData', { foodArray, playerContainer, size });
+	socket.emit('gameData', { 
+		'foodArray': foodArray,
+		'playerContainer': playerContainer,
+		'size': size,
+		'id': socket.id
+	});
 	socket.broadcast.emit('newPlayer', {playerEntity: playerContainer[socket.id], playerId: socket.id});
 	socket.on('disconnect', disconnectPlayer);
 	socket.on('rotation', updateVelocity)

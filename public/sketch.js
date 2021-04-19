@@ -30,18 +30,7 @@ function setup() {
 
 	socket.on('newPlayer', (playerObject) => {
 		console.log('New player connected, ' + playerObject.playerId)
-		clientPlayerArray.push(new Player(
-			{
-				x: playerObject.playerEntity.x,
-				y: playerObject.playerEntity.y,
-				size: playerObject.playerEntity.size,
-				velocity: {
-					x: playerObject.playerEntity.velocity.x,
-					y: playerObject.playerEntity.velocity.y
-				}
-			},
-			playerObject.playerId)
-		)
+		clientPlayerArray.push(new Player(playerObject.playerEntity, playerObject.playerId))
 		console.log(clientPlayerArray)
 	})
 
@@ -114,9 +103,9 @@ function draw() {
 		player.interpolateLocation()
 		if (player.id == id) {
 			player.updateLocalClientData()
-			player.display("blue", cameraX, cameraY, cameraZoom)
+			player.display()
 		} else {
-			player.display("red", cameraX, cameraY, cameraZoom)
+			player.display()
 		}
 	}
 

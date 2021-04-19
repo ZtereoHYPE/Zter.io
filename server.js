@@ -2,8 +2,8 @@
 let foodArray = []
 let playerContainer = {};
 let size = {
-	x: 300,
-	y: 300
+	x: 6000,
+	y: 6000
 }
 for (i = 0; i < size.x / 5; i++) {
 	foodArray.push({

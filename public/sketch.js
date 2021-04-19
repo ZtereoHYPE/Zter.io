@@ -134,7 +134,7 @@ function draw() {
 	}
 	if (cameraZoom > 20 / clientPlayerArray[clientPlayerArray.map((player) => { return player.id }).indexOf(id)].size + 0.7) {
 		let zoomDifference = (cameraZoom - (20 / clientPlayerArray[clientPlayerArray.map((player) => { return player.id }).indexOf(id)].size + 0.7)) / 20
-		if (zoomDifference < 0.0001) {
+		if (zoomDifference < 0.0000001) {
 			cameraZoom = 20 / clientPlayerArray[clientPlayerArray.map((player) => { return player.id }).indexOf(id)].size + 0.7;
 		} else {
 			cameraZoom -= zoomDifference;

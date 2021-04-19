@@ -35,7 +35,8 @@ function connectionEvent(socket) {
 		velocity: {
 			x: 0,
 			y: 0
-		}
+		},
+		colour: '#' + ('00000' + (Math.random() * (1 << 24) | 0).toString(16)).slice(-6)
 	};
 
 	socket.emit('gameData', { 

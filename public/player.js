@@ -11,9 +11,10 @@ class Player {
 			x: playerObject.velocity.x,
 			y: playerObject.velocity.y
 		};
+		this.colour = playerObject.colour;
 	}
 
-	display(colour, cameraX, cameraY, cameraZoom) {
+	display() {
 		if (this.renderedSize < this.size) {
 			let sizeDifference = (this.size - this.renderedSize) / 7
 			if (sizeDifference < 0.001) {
@@ -23,7 +24,7 @@ class Player {
 			}
 		}
 
-		fill(colour);
+		fill(this.colour);
 		noStroke();
 		circle((this.location.x - cameraX) * cameraZoom + windowWidth / 2, (this.location.y - cameraY) * cameraZoom + windowHeight / 2, this.renderedSize * cameraZoom);
 	}

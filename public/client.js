@@ -61,5 +61,5 @@ class Client {
 		text('Total Food/Rendered Food: ' + client.foodArray.length + '/' + renderedFood, 10, 120);
 		text('Frames: ' + Math.floor(frameRate()), 10, 140);
 		text('Size: ' + client.playerArray[client.playerArray.map((player) => { return player.id }).indexOf(id)].size, 10, 160);
-    }
+    };
 }

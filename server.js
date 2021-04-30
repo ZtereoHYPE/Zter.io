@@ -68,19 +68,7 @@ function tickLoop() {
 		// TODO: change this 'algorithm' to keep slowing down but less and less idk find a balance
 		playerContainer[player]['x'] += playerContainer[player]['velocity']['x'] / playerContainer[player]['size'] * 300
 		playerContainer[player]['y'] += playerContainer[player]['velocity']['y'] / playerContainer[player]['size'] * 300
-		
-		if (playerContainer[player].x > size.x) {
-			playerContainer[player].x = size.x
-		}
-		if (playerContainer[player].x < 0) {
-			playerContainer[player].x = 0
-		}
-		if (playerContainer[player].y > size.y) {
-			playerContainer[player].y = size.y
-		}
-		if (playerContainer[player].y < 0) {
-			playerContainer[player].y = 0
-		}
+		normalizeCoordinates(playerContainer[player])
 	};
 	
 	// Check for food eating
@@ -150,13 +138,11 @@ function tickLoop() {
 		};
 	};
 	for (data of deletedPlayersQueue) {
-		console.log(data)
 		playerContainer[data.eatingPlayerId].size += data.growingSize;
 		delete playerContainer[data.eatenPlayerId];
 		io.sockets.emit('eatenPlayer', data);
 	}
 };
-
 
 // TODO: move to ZtereoMATH when it will exist
 function calculateDistance(object1, object2) {
@@ -165,4 +151,18 @@ function calculateDistance(object1, object2) {
 	return Math.sqrt(differenceX * differenceX + differenceY * differenceY);
 };
 
+function normalizeCoordinates(player) {
+	if (player.x > size.x) {
+		player.x = size.x
+	}
+	if (player.x < 0) {
+		player.x = 0
+	}
+	if (player.y > size.y) {
+		player.y = size.y
+	}
+	if (player.y < 0) {
+		player.y = 0
+	}
+}
 setInterval(tickLoop, 50);

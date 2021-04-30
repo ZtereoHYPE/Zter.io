@@ -26,12 +26,12 @@ class Player {
 
 		fill(this.colour);
 		noStroke();
-		circle((this.location.x - cameraX) * cameraZoom + windowWidth / 2, (this.location.y - cameraY) * cameraZoom + windowHeight / 2, this.renderedSize * cameraZoom);
+		circle((this.location.x - client.camera.x) * client.camera.zoom + windowWidth / 2, (this.location.y - client.camera.y) * client.camera.zoom + windowHeight / 2, this.renderedSize * client.camera.zoom);
 	}
 
 	updateLocalClientData() {
-		cameraY = player.location.y
-		cameraX = player.location.x
+		client.camera.x = player.location.x
+		client.camera.y = player.location.y
 		this.velocity.x = (mouseX - windowWidth / 2) / this.size
 		this.velocity.y = (mouseY - windowHeight / 2) / this.size
 		if (Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y) > 1) {
@@ -54,14 +54,14 @@ class Player {
 		this.location.x += this.velocity.x / this.size * 100
 		this.location.y += this.velocity.y / this.size * 100
 
-		if (this.location.x > size.x) {
-			this.location.x = size.x
+		if (this.location.x > client.size.x) {
+			this.location.x = client.size.x
 		}
 		if (this.location.x < 0) {
 			this.location.x = 0
 		}
-		if (this.location.y > size.y) {
-			this.location.y = size.y
+		if (this.location.y > client.size.y) {
+			this.location.y = client.size.y
 		}
 		if (this.location.y < 0) {
 			this.location.y = 0

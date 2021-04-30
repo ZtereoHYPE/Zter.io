@@ -53,16 +53,10 @@ function setup() {
 
 	socket.on('playersUpdate', playerContainer => {
 		for (player in playerContainer) {
-			var currentlyUpdatingPlayerIndex = client.playerArray.map((player) => { return player.id; }).indexOf(player)
-
-			client.playerArray[currentlyUpdatingPlayerIndex].location.x = playerContainer[player].x
-			client.playerArray[currentlyUpdatingPlayerIndex].location.y = playerContainer[player].y
-			client.playerArray[currentlyUpdatingPlayerIndex].size = playerContainer[player].size
-			client.playerArray[currentlyUpdatingPlayerIndex].velocity = playerContainer[player].velocity
+			playerDataFixerUpper(player, playerContainer)
 		}
 		client.playerArray.sort(function (a, b) { return a.size - b.size })
 	})
-
 	socket.on('disconnect', () => client.status = 2)
 };
 
@@ -135,4 +129,17 @@ function calculateDistance(object1, object2) {
 	let differenceX = object1.x - object2.x;
 	let differenceY = object1.y - object2.y;
 	return Math.sqrt(differenceX * differenceX + differenceY * differenceY);
+}
+
+function playerDataFixerUpper(player, playerContainer) {
+	var currentlyUpdatingPlayerIndex = client.playerArray.map((player) => { return player.id; }).indexOf(player)
+
+	client.playerArray[currentlyUpdatingPlayerIndex].location.x = playerContainer[player].x
+	client.playerArray[currentlyUpdatingPlayerIndex].location.y = playerContainer[player].y
+	client.playerArray[currentlyUpdatingPlayerIndex].size = playerContainer[player].size
+	client.playerArray[currentlyUpdatingPlayerIndex].velocity = playerContainer[player].velocity
+}
+function pushNewPlayer(playerObject) {
+	console.log('New player connected, ' + playerObject.playerId);
+	client.playerArray.push(new Player(playerObject.playerEntity, playerObject.playerId));
 }

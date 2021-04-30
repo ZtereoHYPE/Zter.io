@@ -70,9 +70,7 @@ function draw() {
 	}
 
 	// add to map class maybe?
-	background(220);
-	fill('white')
-	rect((0 - client.camera.x) * client.camera.zoom + windowWidth / 2, (0 - client.camera.y) * client.camera.zoom + windowHeight / 2, client.size.x * client.camera.zoom, client.size.y * client.camera.zoom);
+	client.drawMap()
 	
 	renderedFood = 0;
 	for (food of client.foodArray) {

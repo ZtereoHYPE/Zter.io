@@ -54,12 +54,18 @@ class Client {
 		fill(0, 102, 153, 255);
 		text('Debug Data', 10, 20);
 		fill(0, 102, 153, 200);
-		text('Zoom: ' + client.camera.zoom + '/' + (client.camera.zoom - (20 / clientPlayerArray[clientPlayerArray.map((player) => { return player.id }).indexOf(client.id)].size + 0.7)), 10, 40);
-		text('Camera X, Y: ' + Math.floor(client.camera.x) + ' , ' + Math.floor(client.camera.y), 10, 60);
+		text('Zoom/zoomDifference: ' + this.camera.zoom + '/' + (this.camera.zoom - (20 / this.playerArray[this.playerArray.map((player) => { return player.id }).indexOf(this.id)].size + 0.7)), 10, 40);
+		text('Camera X, Y: ' + Math.floor(this.camera.x) + ' , ' + Math.floor(this.camera.y), 10, 60);
 		text('Frame: ' + frameCount, 10, 80);
-		text('Other Players Count: ' + client.playerArray.length, 10, 100);
-		text('Total Food/Rendered Food: ' + client.foodArray.length + '/' + renderedFood, 10, 120);
+		text('Players count: ' + this.playerArray.length, 10, 100);
+		text('Total Food/Rendered Food: ' + this.foodArray.length + '/' + renderedFood, 10, 120);
 		text('Frames: ' + Math.floor(frameRate()), 10, 140);
-		text('Size: ' + client.playerArray[client.playerArray.map((player) => { return player.id }).indexOf(id)].size, 10, 160);
+		text('Size: ' + this.playerArray[this.playerArray.map((player) => { return player.id }).indexOf(this.id)].size, 10, 160);
     };
+
+    drawMap() {
+        background(220);
+	    fill('white')
+	    rect((0 - this.camera.x) * this.camera.zoom + windowWidth / 2, (0 - this.camera.y) * this.camera.zoom + windowHeight / 2, this.size.x * this.camera.zoom, this.size.y * this.camera.zoom);
+    }
 }

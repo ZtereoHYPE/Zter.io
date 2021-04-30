@@ -9,7 +9,6 @@ function setup() {
 	socket.on('gameData', (recievedData) => {
 		console.log('Recieved game data')
 
-		// maybe size should go to map class?
 		client = new Client(recievedData.id, recievedData.size)
 		console.log('Generated client')
 		
@@ -69,7 +68,6 @@ function draw() {
 		return;
 	}
 
-	// add to map class maybe?
 	client.drawMap()
 	
 	renderedFood = 0;
@@ -137,6 +135,7 @@ function playerDataFixerUpper(player, playerContainer) {
 	client.playerArray[currentlyUpdatingPlayerIndex].size = playerContainer[player].size
 	client.playerArray[currentlyUpdatingPlayerIndex].velocity = playerContainer[player].velocity
 }
+
 function pushNewPlayer(playerObject) {
 	console.log('New player connected, ' + playerObject.playerId);
 	client.playerArray.push(new Player(playerObject.playerEntity, playerObject.playerId));

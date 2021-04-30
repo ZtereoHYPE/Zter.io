@@ -2,8 +2,8 @@
 let foodArray = []
 let playerContainer = {};
 let size = {
-	x: 6000,
-	y: 6000
+	x: 300,
+	y: 300
 }
 for (i = 0; i < size.x / 5; i++) {
 	foodArray.push({
@@ -119,9 +119,10 @@ function tickLoop() {
 	// TODO find a way to order the array in size in order to skip check for bigger or smaller player later (if it's faster)
 	// Maybe to not sort it everytime check if the number changed and if yes then redo and sort and if no then check if every element is same and then if yes reuse old (if ever sorting is slow)
 	let playerCache = Object.keys(playerContainer);
+	let deletedPlayersQueue = []
 	for (let i = 0; i < playerCache.length - 1; i++) {
 		for (let j = i + 1; j < playerCache.length; j++) {
-			
+			if (!playerContainer[playerCache[i]] || !playerContainer[playerCache[j]]) continue;
 			// TODO remove this when the array is ordered and do smart stuff to know the bigger one
 			if (playerContainer[playerCache[i]].size > playerContainer[playerCache[j]].size) {
 				largerPlayer = playerCache[i];
@@ -138,23 +139,22 @@ function tickLoop() {
 			
 			if (calculateDistance(playerContainer[smallerPlayer], playerContainer[largerPlayer]) < playerContainer[largerPlayer].size / 2) {
 				console.log(smallerPlayer + ' got eaten')
-				
 				let data = {
 					eatenPlayerId: smallerPlayer,
 					eatingPlayerId: largerPlayer,
 					growingSize: playerContainer[smallerPlayer].size / playerContainer[largerPlayer].size * 50
 				};
-				
-				playerContainer[largerPlayer].size += playerContainer[smallerPlayer].size / playerContainer[largerPlayer].size * 50;
-				
-				delete playerContainer[smallerPlayer];
-				
-				io.sockets.emit('eatenPlayer', data);
+				deletedPlayersQueue.push(data)
 				playerCache.splice(playerCache.indexOf(playerCache.filter(playerId => playerId == smallerPlayer)), 1);
-				continue;
 			};
 		};
 	};
+	for (data of deletedPlayersQueue) {
+		console.log(data)
+		playerContainer[data.eatingPlayerId].size += data.growingSize;
+		delete playerContainer[data.eatenPlayerId];
+		io.sockets.emit('eatenPlayer', data);
+	}
 };
 
 

@@ -16,6 +16,7 @@ function setup() {
 	socket = io.connect('http://localhost:3000');
 
 	socket.on('gameData', (recievedData) => {
+		clientPlayerArray = []
 		disconnected = false;
 		foodArray = recievedData.foodArray;
 		size = recievedData.size;
@@ -47,17 +48,17 @@ function setup() {
 	socket.on('eatenPlayer', data => {
 		if (data.eatenPlayerId == id) {
 			dead = true;
-		} 
+		}
 		console.log(data)
 		clientPlayerArray.splice(clientPlayerArray.map((player) => { return player.id; }).indexOf(data.eatenPlayerId), 1);
-		clientPlayerArray[clientPlayerArray.map((player) => { return player.id; }).indexOf(data.eatingPlayerId)].size = data.growingSize;
+		clientPlayerArray[clientPlayerArray.map((player) => { return player.id; }).indexOf(data.eatingPlayerId)].size += data.growingSize;
 	})
-	
+
 	socket.on('foodEaten', (data) => {
 		foodArray.splice(data.foodIndex, 1);
 		clientPlayerArray[clientPlayerArray.map((player) => { return player.id; }).indexOf(data.playerId)].size = data.size;
 	});
-	
+
 	socket.on('playersUpdate', playerContainer => {
 		for (player in playerContainer) {
 			var currentlyUpdatingPlayerIndex = clientPlayerArray.map((player) => { return player.id; }).indexOf(player)
@@ -68,21 +69,21 @@ function setup() {
 			clientPlayerArray[currentlyUpdatingPlayerIndex].velocity = playerContainer[player].velocity
 		}
 	})
-	
+
 	socket.on('disconnect', () => disconnected = true)
 };
 
 function draw() {
 	if (!id) {
 		background(255);
-		textSize(16);
-		fill(0, 102, 153, Math.sin(frameCount / 20) * 128 + 128);
-		text('Connecting...', 10, 20);
+		textSize(26);
+		fill(0, 102, 153, Math.sin(frameCount / 10) * 128 + 127);
+		text('Connecting...', windowWidth / 2 - 50, windowHeight / 2 + 60);
 		return;
 	}
 
 	background(220);
-	
+
 	fill('white')
 	rect((0 - cameraX) * cameraZoom + windowWidth / 2, (0 - cameraY) * cameraZoom + windowHeight / 2, size.x * cameraZoom, size.y * cameraZoom)
 
@@ -98,7 +99,7 @@ function draw() {
 	});
 
 	clientPlayerArray.sort(function (a, b) { return a.size - b.size })
-
+	
 	for (player of clientPlayerArray) {
 		player.interpolateLocation()
 		if (player.id == id) {
@@ -117,25 +118,29 @@ function draw() {
 	}
 
 	if (disconnected) {
+		background(255);
 		fill('black')
 		textSize(50)
 		text('You are disconnected from the server', windowWidth / 2 - 380, windowHeight / 2);
+		textSize(26);
+		fill(0, 102, 153, Math.sin(frameCount / 10) * 128 + 127);
+		text('Connecting...', windowWidth / 2 - 50, windowHeight / 2 + 60);
 		return;
 	}
 
-	if (cameraZoom < 20 / clientPlayerArray[clientPlayerArray.map((player) => { return player.id }).indexOf(id)].size + 0.7) {
-		if (dead) return
-		let zoomDifference = ((20 / clientPlayerArray[clientPlayerArray.map((player) => { return player.id }).indexOf(id)].size + 0.7) - cameraZoom) / 20
-		if (zoomDifference < 0.0001) {
-			cameraZoom = 20 / clientPlayerArray[clientPlayerArray.map((player) => { return player.id }).indexOf(id)].size + 0.7;
+	let idealZoom = 20 / clientPlayerArray[clientPlayerArray.map((player) => { return player.id }).indexOf(id)].size + 0.7
+	let zoomDifference = Math.abs((idealZoom - cameraZoom) / 20)
+	if (cameraZoom < idealZoom) {
+		if (dead) return;
+		if (zoomDifference < 0.0000001) {
+			cameraZoom = idealZoom;
 		} else {
 			cameraZoom += zoomDifference;
 		}
-	}
-	if (cameraZoom > 20 / clientPlayerArray[clientPlayerArray.map((player) => { return player.id }).indexOf(id)].size + 0.7) {
-		let zoomDifference = (cameraZoom - (20 / clientPlayerArray[clientPlayerArray.map((player) => { return player.id }).indexOf(id)].size + 0.7)) / 20
+	} else if (cameraZoom > idealZoom) {
+		if (dead) return;
 		if (zoomDifference < 0.0000001) {
-			cameraZoom = 20 / clientPlayerArray[clientPlayerArray.map((player) => { return player.id }).indexOf(id)].size + 0.7;
+			cameraZoom = idealZoom;
 		} else {
 			cameraZoom -= zoomDifference;
 		}
@@ -185,6 +190,5 @@ function normalizeCoordinates(object) {
 function calculateDistance(object1, object2) {
 	let differenceX = object1.x - object2.x;
 	let differenceY = object1.y - object2.y;
-
 	return Math.sqrt(differenceX * differenceX + differenceY * differenceY);
 }

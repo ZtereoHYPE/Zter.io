@@ -110,20 +110,9 @@ function tickLoop() {
 	let deletedPlayersQueue = []
 	for (let i = 0; i < playerCache.length - 1; i++) {
 		for (let j = i + 1; j < playerCache.length; j++) {
-			if (!playerContainer[playerCache[i]] || !playerContainer[playerCache[j]]) continue;
-			// TODO remove this when the array is ordered and do smart stuff to know the bigger one
-			if (playerContainer[playerCache[i]].size > playerContainer[playerCache[j]].size) {
-				largerPlayer = playerCache[i];
-				smallerPlayer = playerCache[j];
-				
-			} else if (playerContainer[playerCache[i]].size < playerContainer[playerCache[j]].size) {
-				smallerPlayer = playerCache[i];
-				largerPlayer = playerCache[j];
-				
-			} else {
-				// console.log('identical players found, skipping')
-				continue;
-			};
+			if (playerContainer[playerCache[i]].size == playerContainer[playerCache[j]].size) continue;
+			largerPlayer = playerContainer[playerCache[i]].size > playerContainer[playerCache[j]].size ? playerCache[i] : playerCache[j]
+			smallerPlayer = playerContainer[playerCache[i]].size < playerContainer[playerCache[j]].size ? playerCache[i] : playerCache[j]
 			
 			if (calculateDistance(playerContainer[smallerPlayer], playerContainer[largerPlayer]) < playerContainer[largerPlayer].size / 2) {
 				console.log(smallerPlayer + ' got eaten')
@@ -152,14 +141,14 @@ function calculateDistance(object1, object2) {
 };
 
 function normalizeCoordinates(player) {
-	if (player.x > size.x) {
-		player.x = size.x
+	if (player.x > client.size.x) {
+		player.x = client.size.x
 	}
 	if (player.x < 0) {
 		player.x = 0
 	}
-	if (player.y > size.y) {
-		player.y = size.y
+	if (player.y > client.size.y) {
+		player.y = client.size.y
 	}
 	if (player.y < 0) {
 		player.y = 0

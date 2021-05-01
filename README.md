@@ -1,8 +1,10 @@
 # Zter.io
 This is an attempt to ~~copy~~ remake the game Agar.io in node.js and P5.js.
 
+## Small note:
+At this point this project is close to be completed. The repo will be left open just in case someone wants to take a look, contribute, or i want to change something but this was just supposed to be a small rushed minigame and it is currently in a stable-ish state.
+
 ## TODOs
-- Make the colours be assigned based on the ID and make players have a name.
 - Make an UI where players can connect and choose name and where they end up when dying.
 
 ## TODON'Ts

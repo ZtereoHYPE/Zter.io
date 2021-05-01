@@ -54,17 +54,6 @@ class Player {
 		this.location.x += this.velocity.x / this.size * 100
 		this.location.y += this.velocity.y / this.size * 100
 
-		if (this.location.x > client.size.x) {
-			this.location.x = client.size.x
-		}
-		if (this.location.x < 0) {
-			this.location.x = 0
-		}
-		if (this.location.y > client.size.y) {
-			this.location.y = client.size.y
-		}
-		if (this.location.y < 0) {
-			this.location.y = 0
-		}
+		normalizeCoordinates(this.location)
 	}
 }

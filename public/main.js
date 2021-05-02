@@ -15,6 +15,7 @@ function setup() {
 		for (playerId in recievedData.playerContainer) {
 			client.playerArray.push(new Player(recievedData.playerContainer[playerId], playerId))
 		}
+		client.playerArray.sort(function (a, b) { return a.size - b.size })
 		console.log('Pushed players')
 
 		for (food of recievedData.foodArray) {
@@ -45,16 +46,15 @@ function setup() {
 		client.playerArray[client.playerArray.map((player) => { return player.id; }).indexOf(data.eatingPlayerId)].size += data.growingSize;
 	})
 
-	socket.on('foodEaten', (data) => {
-		client.foodArray.splice(data.foodIndex, 1);
-		client.playerArray[client.playerArray.map((player) => { return player.id; }).indexOf(data.playerId)].size = data.size;
+	socket.on('foodEaten', (foodIndex) => {
+		client.foodArray.splice(foodIndex, 1);
 	});
 
 	socket.on('playersUpdate', playerContainer => {
 		for (player in playerContainer) {
 			playerDataFixerUpper(player, playerContainer)
 		}
-		client.playerArray.sort(function (a, b) { return a.size - b.size })
+		
 	})
 	socket.on('disconnect', () => client.status = 2)
 };
@@ -129,11 +129,12 @@ function calculateDistance(object1, object2) {
 
 function playerDataFixerUpper(player, playerContainer) {
 	var currentlyUpdatingPlayerIndex = client.playerArray.map((player) => { return player.id; }).indexOf(player)
-
+	if (!(client.playerArray[currentlyUpdatingPlayerIndex].size == playerContainer[player].size)) var sort = true;
 	client.playerArray[currentlyUpdatingPlayerIndex].location.x = playerContainer[player].x
 	client.playerArray[currentlyUpdatingPlayerIndex].location.y = playerContainer[player].y
 	client.playerArray[currentlyUpdatingPlayerIndex].size = playerContainer[player].size
 	client.playerArray[currentlyUpdatingPlayerIndex].velocity = playerContainer[player].velocity
+	if (sort) client.playerArray.sort(function (a, b) { return a.size - b.size });
 }
 
 function pushNewPlayer(playerObject) {

@@ -76,16 +76,10 @@ function tickLoop() {
 		for (food of foodArray) {
 			if (calculateDistance(playerContainer[player], food) < playerContainer[player].size / 2 - 2) {
 				playerContainer[player].size += 200 / playerContainer[player].size;
+				let foodIndex = foodArray.indexOf(food)
+				foodArray.splice(foodIndex, 1);
 				
-				var data = {
-					foodIndex: foodArray.indexOf(food),
-					playerId: player,
-					size: playerContainer[player].size
-				};
-				
-				foodArray.splice(data.foodIndex, 1);
-				
-				io.sockets.emit('foodEaten', data);
+				io.sockets.emit('foodEaten', foodIndex);
 				
 				while (foodArray.length < size.x / 5) {
 					let food = {
@@ -141,17 +135,18 @@ function calculateDistance(object1, object2) {
 };
 
 function normalizeCoordinates(player) {
-	if (player.x > client.size.x) {
-		player.x = client.size.x
+	if (player.x > size.x) {
+		player.x = size.x
 	}
 	if (player.x < 0) {
 		player.x = 0
 	}
-	if (player.y > client.size.y) {
-		player.y = client.size.y
+	if (player.y > size.y) {
+		player.y = size.y
 	}
 	if (player.y < 0) {
 		player.y = 0
 	}
 }
+
 setInterval(tickLoop, 50);

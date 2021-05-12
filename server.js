@@ -129,6 +129,7 @@ function tickLoop() {
 
 // TODO: move to ZtereoMATH when it will exist
 function calculateDistance(object1, object2) {
+	if (!object1 || !object2) return;
 	let differenceX = object1.x - object2.x;
 	let differenceY = object1.y - object2.y;
 	return Math.sqrt(differenceX * differenceX + differenceY * differenceY);

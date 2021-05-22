@@ -6,7 +6,7 @@ class Client {
         this.camera = {
             x: 0,
             y: 0,
-            zoom: 3
+            zoom: 5
         };
         this.foodArray = [];
         this.playerArray = [];
@@ -32,7 +32,7 @@ class Client {
     };
 
     adjustZoom() {
-        let idealZoom = 20 / client.playerArray[client.playerArray.map((player) => { return player.id }).indexOf(client.id)].size + 0.7
+        let idealZoom = 30 / client.playerArray[client.playerArray.map((player) => { return player.id }).indexOf(client.id)].size + 0.7
         let zoomDifference = Math.abs((idealZoom - client.camera.zoom) / 20)
         if (client.camera.zoom < idealZoom) {
             if (zoomDifference < 0.0000001) {

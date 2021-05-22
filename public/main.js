@@ -1,17 +1,19 @@
 let renderedFood = 0;
 let client;
-
+new p5();
 function setup() {
 	frameRate(60);
 	createCanvas(windowWidth, windowHeight);
 	socket = io.connect('http://localhost:3000');
+
+	socket.emit('username', "mah cool name")
 
 	socket.on('gameData', (recievedData) => {
 		console.log('Recieved game data')
 
 		client = new Client(recievedData.id, recievedData.size)
 		console.log('Generated client')
-		
+
 		for (playerId in recievedData.playerContainer) {
 			client.playerArray.push(new Player(recievedData.playerContainer[playerId], playerId))
 		}
@@ -54,7 +56,7 @@ function setup() {
 		for (player in playerContainer) {
 			playerDataFixerUpper(player, playerContainer)
 		}
-		
+
 	})
 	socket.on('disconnect', () => client.status = 2)
 };
@@ -69,7 +71,7 @@ function draw() {
 	}
 
 	client.drawMap()
-	
+
 	renderedFood = 0;
 	for (food of client.foodArray) {
 		food.display()
@@ -85,27 +87,23 @@ function draw() {
 			player.display()
 		}
 	}
-	
+
 	if (client.checkStatus()) return;
-	
+
 	client.adjustZoom();
-	
+
 	if (frameCount % 3 == 0) {
 		client.playerArray[client.playerArray.map((player) => { return player.id }).indexOf(client.id)].emitRotation();
 	};
 
-	if (client.debugMode == 1) {
+	if (client.debugMode) {
 		client.renderDebugMode();
 	};
 }
 
 function keyPressed() {
 	if (keyCode === SHIFT) {
-		if (client.debugMode == 1) {
-			client.debugMode = 0;
-		} else {
-			client.debugMode = 1;
-		}
+		client.debugMode = !client.debugMode
 	}
 }
 

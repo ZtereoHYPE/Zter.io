@@ -28,24 +28,28 @@ console.log('Le server is ready to recieve players...');
 function connectionEvent(socket) {
 	console.log('New connection: ' + socket.id);
 
-	playerContainer[socket.id] = {
-		x: Math.floor(Math.random() * size.x),
-		y: Math.floor(Math.random() * size.y),
-		size: 20,
-		velocity: {
-			x: 0,
-			y: 0
-		},
-		colour: '#' + ('00000' + (Math.random() * (1 << 24) | 0).toString(16)).slice(-6)
-	};
-
-	socket.emit('gameData', { 
-		'foodArray': foodArray,
-		'playerContainer': playerContainer,
-		'size': size,
-		'id': socket.id
-	});
-	socket.broadcast.emit('newPlayer', {playerEntity: playerContainer[socket.id], playerId: socket.id});
+	socket.on('username', (recievedUsername) => {
+		console.log(socket.id + ' has the username ' + recievedUsername);
+		playerContainer[socket.id] = {
+			x: Math.floor(Math.random() * size.x),
+			y: Math.floor(Math.random() * size.y),
+			size: 20,
+			velocity: {
+				x: 0,
+				y: 0
+			},
+			colour: '#' + ('00000' + (Math.random() * (1 << 24) | 0).toString(16)).slice(-6),
+			username: recievedUsername
+		};
+	
+		socket.emit('gameData', { 
+			'foodArray': foodArray,
+			'playerContainer': playerContainer,
+			'size': size,
+			'id': socket.id
+		});
+		socket.broadcast.emit('newPlayer', {playerEntity: playerContainer[socket.id], playerId: socket.id});
+	})
 	socket.on('disconnect', disconnectPlayer);
 	socket.on('rotation', updateVelocity)
 

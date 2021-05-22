@@ -6,7 +6,7 @@ function setup() {
 	createCanvas(windowWidth, windowHeight);
 	socket = io.connect('http://localhost:3000');
 
-	socket.emit('username', "mah cool name")
+	socket.emit('username', username)
 
 	socket.on('gameData', (recievedData) => {
 		console.log('Recieved game data')
@@ -126,6 +126,7 @@ function calculateDistance(object1, object2) {
 }
 
 function playerDataFixerUpper(player, playerContainer) {
+	if (!client) return;
 	var currentlyUpdatingPlayerIndex = client.playerArray.map((player) => { return player.id; }).indexOf(player)
 	if (!(client.playerArray[currentlyUpdatingPlayerIndex].size == playerContainer[player].size)) var sort = true;
 	client.playerArray[currentlyUpdatingPlayerIndex].location.x = playerContainer[player].x

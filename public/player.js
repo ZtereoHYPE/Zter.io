@@ -28,8 +28,9 @@ class Player {
 		fill(this.colour);
 		noStroke();
 		circle((this.location.x - client.camera.x) * client.camera.zoom + windowWidth / 2, (this.location.y - client.camera.y) * client.camera.zoom + windowHeight / 2, this.renderedSize * client.camera.zoom);
-		fill('black')
-		text(this.username, (this.location.x - client.camera.x) * client.camera.zoom + windowWidth / 2, (this.location.y - client.camera.y) * client.camera.zoom + windowHeight / 2);
+		fill('gray')
+		textSize(30)
+		text(this.username, ((this.location.x - client.camera.x) * client.camera.zoom + windowWidth / 2) - (this.username.length * 7), (this.location.y - client.camera.y) * client.camera.zoom + windowHeight / 2);
 	}
 
 	updateLocalClientData() {

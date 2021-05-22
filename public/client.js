@@ -10,7 +10,7 @@ class Client {
         };
         this.foodArray = [];
         this.playerArray = [];
-        this.debugMode = 0;
+        this.debugMode = false;
     };
 
     checkStatus() {

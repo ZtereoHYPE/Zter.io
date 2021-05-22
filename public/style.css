@@ -1,8 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap');
 html, body {
-    margin: 0;
-    padding: 0;
-  }
-  canvas {
-    display: block;
-  }
-  
+	margin: 0;
+	padding: 0;
+	font-family: 'Quicksand', sans-serif;
+}
+
+canvas {
+	display: block;
+}
+
+.text {
+	display: flex;
+	justify-content: center;
+	font-size: 50px;
+	cursor: default;
+}
+
+.form {
+	display: flex;
+	justify-content: center;
+}
+
+.container {
+	margin-top: 20vh;
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+}
+
+#usernameField {
+	font-size: 20px;
+	border-radius: 14px;
+	width: 260px;
+	height: 40px;
+	border: none;
+	padding: 10px;
+	background-color: gainsboro;
+	border-bottom-right-radius: 0;
+	border-top-right-radius: 0;
+	text-align: center;
+}
+
+#submitButton {
+	font-size: 20px;
+	border: none;
+	padding: 10px;
+	height: 60px;
+	width: 80px;
+	background-color: green;
+	color: white;
+	border-radius: 14px;
+	border-bottom-left-radius: 0;
+	border-top-left-radius: 0;
+	margin: 0;
+	cursor: pointer;
+}

@@ -155,3 +155,7 @@ function normalizeCoordinates(player) {
 }
 
 setInterval(tickLoop, 50);
+
+process.on('unhandledRejection', error => {
+    console.error('Unhandled promise rejection:', error);
+});

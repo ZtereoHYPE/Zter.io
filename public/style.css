@@ -39,6 +39,7 @@ canvas {
 	border-bottom-right-radius: 0;
 	border-top-right-radius: 0;
 	text-align: center;
+	outline: none;
 }
 
 #submitButton {

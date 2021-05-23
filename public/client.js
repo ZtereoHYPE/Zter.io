@@ -50,6 +50,7 @@ class Client {
     };
 
     renderDebugMode() {
+        textAlign(LEFT)
 		textSize(16);
 		fill(0, 102, 153, 255);
 		text('Debug Data', 10, 20);

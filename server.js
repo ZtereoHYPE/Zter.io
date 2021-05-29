@@ -1,6 +1,7 @@
 // Generate map
 let foodArray = []
 let playerContainer = {};
+let deletedPlayersQueue = []
 let size = {
 	x: 300,
 	y: 300
@@ -60,8 +61,7 @@ function connectionEvent(socket) {
 	function disconnectPlayer() {
 		console.log('Player disconnected: ' + this.id);
 		if (!playerContainer[this.id]) return console.log('the player was dead, already deleted');
-		delete playerContainer[this.id];
-		io.sockets.emit('playerDisconnected', this.id)
+		deletedPlayersQueue.push(this.id);
 	};
 };
 
@@ -105,7 +105,6 @@ function tickLoop() {
 	// TODO find a way to order the array in size in order to skip check for bigger or smaller player later (if it's faster)
 	// Maybe to not sort it everytime check if the number changed and if yes then redo and sort and if no then check if every element is same and then if yes reuse old (if ever sorting is slow)
 	let playerCache = Object.keys(playerContainer);
-	let deletedPlayersQueue = []
 	for (let i = 0; i < playerCache.length - 1; i++) {
 		for (let j = i + 1; j < playerCache.length; j++) {
 			if (playerContainer[playerCache[i]].size == playerContainer[playerCache[j]].size) continue;
@@ -125,9 +124,15 @@ function tickLoop() {
 		};
 	};
 	for (data of deletedPlayersQueue) {
-		playerContainer[data.eatingPlayerId].size += data.growingSize;
-		delete playerContainer[data.eatenPlayerId];
-		io.sockets.emit('eatenPlayer', data);
+		deletedPlayersQueue.pop(deletedPlayersQueue.indexOf(data));
+		if (data.eatenPlayerId) {
+			playerContainer[data.eatingPlayerId].size += data.growingSize;
+			delete playerContainer[data.eatenPlayerId];
+			io.sockets.emit('eatenPlayer', data);
+		} else {
+			delete playerContainer[data];
+			io.sockets.emit('playerDisconnected', data)
+		}
 	}
 };
 

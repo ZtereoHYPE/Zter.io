@@ -12,6 +12,7 @@ function playGame() {
     }
     // username = document.querySelector('#usernameField').value;
     document.querySelector('.container').style.display = 'none';
+    document.querySelector('.footer').style.display = 'none';
     let mainScript = document.createElement('script');
     mainScript.type = 'text/javascript';
     mainScript.src = 'main.js';

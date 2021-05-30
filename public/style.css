@@ -1,8 +1,49 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap');
+@media (prefers-color-scheme: light) {
+    :root {
+        --text-primary: #111111;
+        --text-secondary: #3B3B3B;
+        --background: #d1dde0;
+        --background2: #edf2f7;
+        --navColor: #ffffff;
+        --accentColor: rgb(112, 169, 189);
+        --background-image: url("https://imgur.com/0vqF4ki.jpg");
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text-primary: white;
+        --text-secondary: #a0a0a0;
+        --background: #181818;
+        --background2: #2b2b2b;
+        --navColor: #363636;
+        --accentColor: #add8e6;
+        --background-image: url("https://imgur.com/A7fHD0V.jpg");
+    }
+}
 html, body {
 	margin: 0;
 	padding: 0;
 	font-family: 'Quicksand', sans-serif;
+	color: var(--text-primary);
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+body {
+	background-color: var(--background);
+	display: flex;
+	height: 100%;
+	align-items: center;
+	flex-direction: column;
+	justify-content: center;
+	background-image: var(--background-image);
+	background-size: cover;
+	background-repeat: no-repeat;
 }
 
 canvas {
@@ -14,18 +55,14 @@ canvas {
 	justify-content: center;
 	font-size: 50px;
 	cursor: default;
+	margin: 30px;
 }
 
 .form {
 	display: flex;
 	justify-content: center;
-}
-
-.container {
-	margin-top: 20vh;
-	display: flex;
-	justify-content: center;
-	flex-direction: column;
+	margin: 30px;
+	color: var(--text-secondary);
 }
 
 #usernameField {
@@ -35,11 +72,12 @@ canvas {
 	height: 40px;
 	border: none;
 	padding: 10px;
-	background-color: gainsboro;
+	background-color: var(--background);
 	border-bottom-right-radius: 0;
 	border-top-right-radius: 0;
 	text-align: center;
 	outline: none;
+	color: var(--text-primary);
 }
 
 #submitButton {
@@ -54,5 +92,35 @@ canvas {
 	border-bottom-left-radius: 0;
 	border-top-left-radius: 0;
 	margin: 0;
+	cursor: pointer;
+}
+
+.container {
+	border-radius: 32px;
+	background-color: var(--background2);
+	height: 300px;
+	width: 600px;
+	margin-top: calc(50vh - 150px);	
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.footer {
+	width: 100%;
+	margin-top: calc(50vh - 202px);
+	text-align: end;
+	margin-right: 40px;
+	height: 30px;
+	color: #a0a0a0;
+	cursor: default;
+}
+.footerText {
+	display: inline-block;
+}
+.spicy {
+	color: var(--accentColor);
+	text-decoration: underline;
+	text-decoration-thickness: 2px;
 	cursor: pointer;
 }

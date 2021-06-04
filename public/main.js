@@ -1,5 +1,21 @@
 let renderedFood = 0;
 let client;
+let theme;
+setTheme();
+
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {setTheme()})
+
+function setTheme() {
+	let documentStyles = getComputedStyle(document.documentElement)
+	theme = {
+		background: documentStyles.getPropertyValue('--background'),
+		content: documentStyles.getPropertyValue('--background2'),
+		text: documentStyles.getPropertyValue('--text-primary'),
+		secondaryText: documentStyles.getPropertyValue('--text-secondary'),
+		accent: documentStyles.getPropertyValue('--accentColor'),
+	}
+}
+
 new p5();
 function setup() {
 	frameRate(60);
@@ -63,7 +79,7 @@ function setup() {
 
 function draw() {
 	if (!client) {
-		background(255);
+		background(theme.background);
 		textSize(26);
 		fill(0, 102, 153, Math.sin(frameCount / 10) * 128 + 127);
 		text('Connecting...', windowWidth / 2 - 50, windowHeight / 2 + 60);

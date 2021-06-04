@@ -20,8 +20,8 @@ class Client {
             text('You got eaten!', windowWidth / 2 - 160, windowHeight / 2);
             return true;
         } else if (client.status == 2) {
-            background(255);
-            fill('black')
+            background(theme.background);
+            fill(theme.text)
             textSize(50)
             text('You are disconnected from the server', windowWidth / 2 - 380, windowHeight / 2);
             textSize(26);
@@ -52,9 +52,9 @@ class Client {
     renderDebugMode() {
         textAlign(LEFT)
 		textSize(16);
-		fill(0, 102, 153, 255);
+		fill(theme.accent);
 		text('Debug Data', 10, 20);
-		fill(0, 102, 153, 200);
+		fill(theme.secondaryText);
 		text('Zoom/zoomDifference: ' + this.camera.zoom + '/' + (this.camera.zoom - (20 / this.playerArray[this.playerArray.map((player) => { return player.id }).indexOf(this.id)].size + 0.7)), 10, 40);
 		text('Camera X, Y: ' + Math.floor(this.camera.x) + ' , ' + Math.floor(this.camera.y), 10, 60);
 		text('Frame: ' + frameCount, 10, 80);
@@ -65,8 +65,8 @@ class Client {
     };
 
     drawMap() {
-        background(220);
-	    fill('white')
+        background(theme.background);
+	    fill(theme.content)
 	    rect((0 - this.camera.x) * this.camera.zoom + windowWidth / 2, (0 - this.camera.y) * this.camera.zoom + windowHeight / 2, this.size.x * this.camera.zoom, this.size.y * this.camera.zoom);
     }
 }

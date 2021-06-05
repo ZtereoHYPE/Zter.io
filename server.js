@@ -124,7 +124,7 @@ function tickLoop() {
 			smallerPlayer = playerContainer[playerCache[i]].size < playerContainer[playerCache[j]].size ? playerCache[i] : playerCache[j]
 			
 			if (calculateDistance(playerContainer[smallerPlayer], playerContainer[largerPlayer]) < playerContainer[largerPlayer].size / 2) {
-				console.log(smallerPlayer + ' got eaten')
+				console.log(smallerPlayer + ' was eaten by ' + largerPlayer)
 				let data = {
 					eatenPlayerId: smallerPlayer,
 					eatingPlayerId: largerPlayer,

@@ -6,11 +6,23 @@ let size = {
 	x: 300,
 	y: 300
 }
+
+// Cache food colour map
+let foodColourCache = []
+for (i = 0; i < 50; i++) {
+	foodColourCache.push('#' + ('00000' + (Math.random() * (1 << 24) | 0).toString(16)).slice(-6))
+}
+
+// Quick retrieval of random value from colour cache
+function getRandomColour() {
+	return foodColourCache[Math.floor(Math.random() * foodColourCache.length)];
+}
+
 for (i = 0; i < size.x / 5; i++) {
 	foodArray.push({
 		x: Math.floor(Math.random() * size.x),
 		y: Math.floor(Math.random() * size.y),
-		colour: '#' + ('00000' + (Math.random() * (1 << 24) | 0).toString(16)).slice(-6)
+		colour: getRandomColour()
 	})
 };
 
@@ -39,7 +51,7 @@ function connectionEvent(socket) {
 				x: 0,
 				y: 0
 			},
-			colour: '#' + ('00000' + (Math.random() * (1 << 24) | 0).toString(16)).slice(-6),
+			colour: getRandomColour(),
 			username: recievedUsername
 		};
 	
@@ -89,7 +101,7 @@ function tickLoop() {
 					let food = {
 						x: Math.floor(Math.random() * size.x),
 						y: Math.floor(Math.random() * size.y),
-						colour: '#' + ('00000' + (Math.random() * (1 << 24) | 0).toString(16)).slice(-6)
+						colour: getRandomColour()
 					};
 					foodArray.push(food);
 					io.sockets.emit('foodGenerated', food);

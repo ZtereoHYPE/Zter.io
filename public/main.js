@@ -76,6 +76,8 @@ function setup() {
 	});
 
 	socket.on('playersUpdate', playerContainer => {
+		if (!client) return;
+		client.timeAtLastTick = new Date().getTime();
 		for (player in playerContainer) {
 			playerDataFixerUpper(player, playerContainer)
 		}
@@ -148,8 +150,10 @@ function playerDataFixerUpper(player, playerContainer) {
 	if (!client) return;
 	var currentlyUpdatingPlayerIndex = client.playerArray.map((player) => { return player.id; }).indexOf(player)
 	if (!(client.playerArray[currentlyUpdatingPlayerIndex].size == playerContainer[player].size)) var sort = true;
-	client.playerArray[currentlyUpdatingPlayerIndex].location.x = playerContainer[player].x
-	client.playerArray[currentlyUpdatingPlayerIndex].location.y = playerContainer[player].y
+	client.playerArray[currentlyUpdatingPlayerIndex].oldLocation.x = client.playerArray[currentlyUpdatingPlayerIndex].location.x
+	client.playerArray[currentlyUpdatingPlayerIndex].oldLocation.y = client.playerArray[currentlyUpdatingPlayerIndex].location.y
+	client.playerArray[currentlyUpdatingPlayerIndex].newLocation.x = playerContainer[player].x
+	client.playerArray[currentlyUpdatingPlayerIndex].newLocation.y = playerContainer[player].y
 	client.playerArray[currentlyUpdatingPlayerIndex].size = playerContainer[player].size
 	client.playerArray[currentlyUpdatingPlayerIndex].velocity = playerContainer[player].velocity
 	if (sort) client.playerArray.sort(function (a, b) { return a.size - b.size });

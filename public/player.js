@@ -13,6 +13,14 @@ class Player {
 		};
 		this.colour = playerObject.colour;
 		this.username = playerObject.username;
+		this.oldLocation = {
+			x: playerObject.x,
+			y: playerObject.y
+		};
+		this.newLocation = {
+			x: playerObject.x,
+			y: playerObject.y
+		};
 	}
 
 	display() {
@@ -56,8 +64,12 @@ class Player {
 	}
 
 	interpolateLocation() {
-		this.location.x += this.velocity.x / this.size * 100
-		this.location.y += this.velocity.y / this.size * 100
+		let currentTime = Date.now()
+		let timeDelta = currentTime - client.timeAtLastTick;
+		let lerpValue = Math.min(1, timeDelta / 50);
+		// console.log(currentTime, client.timeAtLastTick, timeDelta, lerpValue)
+		this.location.x = lerp(this.location.x, this.newLocation.x, lerpValue);
+		this.location.y = lerp(this.location.y, this.newLocation.y, lerpValue);
 
 		if (this.location.x > client.size.x) {
 			this.location.x = client.size.x

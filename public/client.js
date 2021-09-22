@@ -11,6 +11,7 @@ class Client {
         this.foodArray = [];
         this.playerArray = [];
         this.debugMode = false;
+        this.timeAtLastTick = 0;
     };
 
     checkStatus() {

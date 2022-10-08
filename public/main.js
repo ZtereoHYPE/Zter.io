@@ -20,14 +20,14 @@ new p5();
 function setup() {
 	frameRate(60);
 	createCanvas(windowWidth, windowHeight);
-	socket = io.connect('http://io.ztereohype.codes', {
-		reconnection: false
-	});
-
-	// uncomment this and comment above for localhost playing
-	// socket = io.connect('http://localhost:3000', {
+	// socket = io.connect('http://io.ztereohype.codes', {
 	// 	reconnection: false
 	// });
+
+	// uncomment this and comment above for localhost playing
+	socket = io.connect('http://localhost:3000', {
+		reconnection: false
+	});
 
 	socket.emit('username', username)
 
@@ -156,7 +156,7 @@ function playerDataFixerUpper(player, playerContainer) {
 	client.playerArray[currentlyUpdatingPlayerIndex].newLocation.y = playerContainer[player].y
 	client.playerArray[currentlyUpdatingPlayerIndex].size = playerContainer[player].size
 	client.playerArray[currentlyUpdatingPlayerIndex].velocity = playerContainer[player].velocity
-	if (sort) client.playerArray.sort(function (a, b) { return a.size - b.size });
+	if (sort) client.playerArray.sort((a, b) => a.size - b.size);
 }
 
 function pushNewPlayer(playerObject) {
